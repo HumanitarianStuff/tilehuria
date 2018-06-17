@@ -18,5 +18,11 @@ cursor.execute('''
 CREATE UNIQUE INDEX tile_index on tiles (zoom_level, tile_column, tile_row)
 ''')
 
+#with open("...", "rb") as input_file:
+#    ablob = input_file.read()
+#    cursor.execute("INSERT INTO tiles (id, file) VALUES(0, ?)", [sqlite3.Binary(ablob)])
+#    db.commit()
+
+
 db.commit()
 db.close()

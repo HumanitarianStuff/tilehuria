@@ -13,49 +13,60 @@ def connect(infile):
     return None
 
 def main(infile):
-    connection = connect(infile)
-    cursor = connection.cursor()
-    print()
+    infofilename = 'tiles/output/' + 'info.txt'
+    with open(infofilename, 'w') as infofile:
+        connection = connect(infile)
+        cursor = connection.cursor()
+    
+        # print list of tables
+        infofile.write('Tables in database:\n')
+        cursor.execute("SELECT name FROM sqlite_master WHERE type='table';")
+        rows = cursor.fetchall()
+        for row in rows:
+            for info in row:
+                if(info != None):
+                    infofile.write(info)
+                    infofile.write('\n')
+        infofile.write('\n')
+    
+        # infofile.write all rows in metadata table
+        infofile.write('Rows in metadata table:\n')
+        cursor.execute("SELECT * FROM metadata;")
+        rows = cursor.fetchall()
+        for row in rows:
+            for info in row:
+                if(info != None):
+                    infofile.write(info)
+                    infofile.write(' ')
+            infofile.write('\n')
+        infofile.write('\n')
+    
+        # infofile.write all rows in tiles table
+        infofile.write('Columns in tiles table:\n')
+        cursor.execute("SELECT * FROM tiles;")
+        columns = cursor.description
+        for column in columns:
+            infofile.write(column[0])
+            infofile.write('\n')
+        infofile.write('\n')
+    
+        infofile.write('Number of rows in tiles table: ')
+        rows = cursor.fetchall()
+        infofile.write(str(len(rows)))
+        infofile.write('\n')
 
-    # print list of tables
-    print('Tables in database')
-    cursor.execute("SELECT name FROM sqlite_master WHERE type='table';")
-    rows = cursor.fetchall()
-    for row in rows:
-        print(row)
-    print()
-
-    # print all rows in metadata table
-    print('Rows in metadata table')
-    cursor.execute("SELECT * FROM metadata;")
-    rows = cursor.fetchall()
-    for row in rows:
-        print(row)
-    print()
-
-    # print all rows in tiles table
-    print('Columns in tiles table')
-    cursor.execute("SELECT * FROM tiles;")
-    columns = cursor.description
-    for column in columns:
-        print(column[0])
-    print()
-
-    print('Number of rows in tiles table')
-    rows = cursor.fetchall()
-    print(len(rows))
-    print()
-
-    print('Rows in tiles table')
-    for row in rows:
-        print(str(row[0]) + ', ' + str(row[1]) + ', ' + str(row[2]))
-        outfilename = 'tiles/output/' + str(row[0])\
-                      + '_' + str(row[1]) + '_' + str(row[2]) + '.png'
-        with open(outfilename, 'wb') as outfile:
-            outfile.write(row[3])
-
-    cursor.close()
-    connection.close()
-            
+        infofile.write('Individual tile filenames: \n')
+        for row in rows:
+            infofile.write(str(row[0]) + '_' + str(row[1]) + '_' + str(row[2]) \
+                           + '.png')
+            infofile.write('\n')
+            outfilename = 'tiles/output/' + str(row[0])\
+                          + '_' + str(row[1]) + '_' + str(row[2]) + '.png'
+            with open(outfilename, 'wb') as outfile:
+                outfile.write(row[3])
+    
+        cursor.close()
+        connection.close()
+                
 if __name__ == '__main__':
     main(sys.argv[1])
