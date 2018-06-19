@@ -1,5 +1,5 @@
 #!/bin/python3
-Ivan Buendia Gayton 2016
+# Ivan Buendia Gayton, Ramani Huria 2018
 """Create a CSV document containing a list of tile URLs for classification.
 
 Arguments:
@@ -93,7 +93,7 @@ def quadKey_to_Bing_URL(quadKey, api_key):
     return tile_url
 
 
-def main(infile, zoomlevel, tileserver):
+def main(infile, minzoomlevel, maxzoomlevel, tileserver):
     try:
         from osgeo import ogr, osr
         #print "Import of ogr and osr from osgeo worked.  Hurray!\n"
@@ -182,7 +182,7 @@ def main(infile, zoomlevel, tileserver):
         geomcol.AddGeometry(feature.GetGeometryRef())
 
     # get Zoomlevel
-    zoom = float(zoomlevel)
+    zoom = float(minzoomlevel)
 
     # create output file
     outputGridfn = infile_name + '_tiles.' + infile_extension
@@ -303,7 +303,7 @@ def main(infile, zoomlevel, tileserver):
 
 if __name__ == "__main__":
 
-    if 3 >= len( sys.argv ) >= 4:
+    if 4 >= len( sys.argv ) >= 5:
         print("[ ERROR ] you must supply at least 2 arguments: "
               "(input-shapefile-name.kml or URL pointing to a KML, SHP, "
               "or GeoJSON polygon) (zoomlevel) (tileserver [optional])")
@@ -314,6 +314,6 @@ if __name__ == "__main__":
         tileserver='bing'
         print('Using Bing as default since you did not specify a tileserver')
     else:
-        tileserver=sys.argv[3]
+        tileserver=sys.argv[4]
 
-    main(sys.argv[1], sys.argv[2], tileserver)
+    main(sys.argv[1], sys.argv[2], sys.argv[3], tileserver)

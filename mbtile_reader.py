@@ -1,4 +1,5 @@
 #!/usr/bin/python3
+
 import sys, os
 import sqlite3
 from sqlite3 import Error
@@ -30,8 +31,14 @@ def main(infile):
         infofile.write('\n')
     
         # infofile.write all rows in metadata table
-        infofile.write('Rows in metadata table:\n')
+        infofile.write('Columns in metadata table:\n')
         cursor.execute("SELECT * FROM metadata;")
+        columns = cursor.description
+        for column in columns:
+            infofile.write(column[0])
+            infofile.write('\n')
+        infofile.write('\n')
+        infofile.write('Rows in metadata table:\n')
         rows = cursor.fetchall()
         for row in rows:
             for info in row:
@@ -60,7 +67,7 @@ def main(infile):
             infofile.write(str(row[0]) + '_' + str(row[1]) + '_' + str(row[2]) \
                            + '.png')
             infofile.write('\n')
-            outfilename = 'tiles/output/' + str(row[0])\
+            outfilename = 'tiles/output/images/' + str(row[0])\
                           + '_' + str(row[1]) + '_' + str(row[2]) + '.png'
             with open(outfilename, 'wb') as outfile:
                 outfile.write(row[3])
