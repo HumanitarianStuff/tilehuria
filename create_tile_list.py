@@ -51,21 +51,21 @@ def pixel_coords_to_tile_address(x,y):
     return t
 
 def tile_coords_zoom_and_tileserver_to_URL(
-        TileX, TileY, zoomlevel, tileserver, api_key):
+        TileX, TileY, zoom, tileserver, api_key):
     """Create a URL for a tile based on tile coordinates and zoom"""
     URL = ''
     if tileserver=='bing':
         quadKey = tile_coords_and_zoom_to_quadKey(
-            int(TileX),int(TileY),int(zoomlevel))
+            int(TileX),int(TileY),int(zoom))
         URL = quadKey_to_Bing_URL(quadKey, api_key)
     elif tileserver=='digital_globe_standard':
         switchserver='a' # TODO: make this alternate between a-d
         URL = ("{}.tiles.mapbox.com/v4/digitalglobe.0a8e44ba"
                "/{}/{}/{}.png?access_token={}"
-               .format(switchserver, zoomlevel, TileX, TileY, api_key))
+               .format(switchserver, zoom, TileX, TileY, api_key))
     elif tileserver=='google':
         URL = ("https://mt0.google.com/vt/lyrs=s&hl=en&x={}&y={}&z={}\n"
-               .format(TileX, TileY, zoomlevel))
+               .format(TileX, TileY, zoom))
     elif tileserver=='osm':
         pass
     elif tileserver=='custom':
@@ -96,7 +96,7 @@ def quadKey_to_Bing_URL(quadKey, api_key):
     return tile_url
 
 
-def main(infile, minzoomlevel, maxzoomlevel, tileserver):
+def main(infile, minzoom, maxzoom, tileserver):
     try:
         from osgeo import ogr, osr
         #print("Import of ogr and osr from osgeo worked.  Hurray!\n")
@@ -105,23 +105,6 @@ def main(infile, minzoomlevel, maxzoomlevel, tileserver):
         print('## Import of ogr from osgeo failed\n\n')
         print('#########################################################')
         sys.exit()
-
-    # check if the input is a URL, if so, download it
-
-#    parts = urlparse.urlsplit(infile)
-#    if parts.scheme:
-#        #print('infile is a URL')
-#        if not os.path.exists('tmp/'):
-#            os.makedirs('tmp')
-#        temp_infile = (os.getcwd()) + '/tmp/infile.kml'
-#        print(temp_infile)
-#        urllib.urlretrieve(infile, temp_infile)
-#        print(temp_infile)
-#        infile = temp_infile
-#
-#    else:
-#        #print("Infile is not a URL")
-#        pass
 
     try:
         infile_name = infile.split('.')[0]
@@ -147,13 +130,15 @@ def main(infile, minzoomlevel, maxzoomlevel, tileserver):
         print("Something is wrong with your API key."
                "Do you even have an API key?")
 
-    # Get the driver --> supported formats: Shapefiles, GeoJSON, kml
+    # Get the driver (shapefile, geopackage, GeoJSON, or KML)
     if infile_extension == 'shp':
         driver = ogr.GetDriverByName('ESRI Shapefile')
     elif infile_extension == 'geojson':
         driver = ogr.GetDriverByName('GeoJSON')
     elif infile_extension == 'kml':
         driver = ogr.GetDriverByName('KML')
+    elif infile_extension == gpkg:
+        driver = ogr.GetDriverByName('GPKG')
     else:
         print('Check input file format for '+infile)
         print('Supported formats .shp .geojson .kml')
@@ -184,9 +169,6 @@ def main(infile, minzoomlevel, maxzoomlevel, tileserver):
     for feature in layer:
         geomcol.AddGeometry(feature.GetGeometryRef())
 
-    # get Zoomlevel
-    zoom = float(maxzoomlevel)
-
     # create output file
     outputGridfn = infile_name + '_tiles.' + infile_extension
 
@@ -204,121 +186,109 @@ def main(infile, minzoomlevel, maxzoomlevel, tileserver):
     outLayer = outDataSource.CreateLayer(outputGridfn,geom_type=ogr.wkbPolygon)
     featureDefn = outLayer.GetLayerDefn()
 
-    # create fields for TileX, TileY, TileZ
-    TileX_field = ogr.FieldDefn('TileX',ogr.OFTInteger)
-    outLayer.CreateField(TileX_field)
-    TileY_field = ogr.FieldDefn('TileY',ogr.OFTInteger)
-    outLayer.CreateField(TileY_field)
-    TileZ_field = ogr.FieldDefn('TileZ',ogr.OFTInteger)
-    outLayer.CreateField(TileZ_field)
-    URL_field = ogr.FieldDefn('URL' , ogr.OFTString)
-    outLayer.CreateField(URL_field)
+    # Iterate through all zoom levels requested
+    for zoom in range(int(minzoom),int(maxzoom)+1):
+        # create fields for TileX, TileY, TileZ
+        TileX_field = ogr.FieldDefn('TileX',ogr.OFTInteger)
+        outLayer.CreateField(TileX_field)
+        TileY_field = ogr.FieldDefn('TileY',ogr.OFTInteger)
+        outLayer.CreateField(TileY_field)
+        TileZ_field = ogr.FieldDefn('TileZ',ogr.OFTInteger)
+        outLayer.CreateField(TileZ_field)
+        URL_field = ogr.FieldDefn('URL' , ogr.OFTString)
+        outLayer.CreateField(URL_field)
+    
+        # get upper left left tile coordinates
+        pixel = lat_long_zoom_to_pixel_coords(ymax, xmin, zoom)
+        tile = pixel_coords_to_tile_address(pixel.x, pixel.y)
+        TileX_left = tile.x
+        TileY_top = tile.y
+        
+        # get lower right tile coordinates
+        pixel = lat_long_zoom_to_pixel_coords(ymin, xmax, zoom)
+        tile = pixel_coords_to_tile_address(pixel.x, pixel.y)    
+        TileX_right = tile.x
+        TileY_bottom = tile.y
 
-    # get upper left left tile coordinates
-    pixel = lat_long_zoom_to_pixel_coords(ymax, xmin, zoom)
-    tile = pixel_coords_to_tile_address(pixel.x, pixel.y)
-
-    TileX_left = tile.x
-    TileY_top = tile.y
-
-    # get lower right tile coordinates
-    pixel = lat_long_zoom_to_pixel_coords(ymin, xmax, zoom)
-    tile = pixel_coords_to_tile_address(pixel.x, pixel.y)
-
-    TileX_right = tile.x
-    TileY_bottom = tile.y
-
-    # Iterate through all tiles in the AOI and create a CSV row for each
-    for TileY in range(TileY_top,TileY_bottom+1):
-        for TileX in range(TileX_left,TileX_right+1):
-            # Calculate lat, lon of upper left corner of tile
-            PixelX = TileX * 256
-            PixelY = TileY * 256
-            MapSize = 256*math.pow(2,zoom)
-            x = (PixelX / MapSize) - 0.5
-            y = 0.5 - (PixelY / MapSize)
-            lon_left = 360 * x
-            lat_top = (90 - 360 * math.atan(math.exp(-y * 2 * math.pi))
-                       / math.pi)
-
-            # Calculate lat, lon of lower right corner of tile
-            PixelX = (TileX+1) * 256
-            PixelY = (TileY+1) * 256
-            MapSize = 256*math.pow(2,zoom)
-            x = (PixelX / MapSize) - 0.5
-            y = 0.5 - (PixelY / MapSize)
-            lon_right = 360 * x
-            lat_bottom = (90 - 360 * math.atan(math.exp(-y * 2 * math.pi))
-                          / math.pi)
-
-            # Create Geometry
-            ring = ogr.Geometry(ogr.wkbLinearRing)
-            ring.AddPoint(lon_left, lat_top)
-            ring.AddPoint(lon_right, lat_top)
-            ring.AddPoint(lon_right, lat_bottom)
-            ring.AddPoint(lon_left, lat_bottom)
-            ring.AddPoint(lon_left, lat_top)
-            poly = ogr.Geometry(ogr.wkbPolygon)
-            poly.AddGeometry(ring)
-
-            # Check if tile is within the polygon of the Area of Interest.
-            intersect = geomcol.Intersect(poly)
-            print('Checking intersect')
-            if intersect == True:
-                # Tile is in the AOI. Add a row to the CSV for this tile.
-                print('The tile at {}, {}, {} is in the AOI.'
-                          .format(TileX, TileY, zoom))
-                l = l+1
-                outline = poly.ExportToWkt()
-                #print('The outline is {}'.format(outline))
-                URL = tile_coords_zoom_and_tileserver_to_URL(
-                    int(TileX), int(TileY), int(maxzoomlevel),
-                    tileserver, api_key)
-                print(URL)
-                fileobj_output.write('\"'+outline+'\"$'+str(TileX)+'$'
-                                     +str(TileY)+'$'+str(maxzoomlevel)+'$'+ URL)
-
-                outFeature = ogr.Feature(featureDefn)
-                outFeature.SetGeometry(poly)
-                if infile_extension == 'kml':
-                    col_row_zoom = str(TileX)+'_'+str(TileY)+'_'+str(int(zoom))
-                    outFeature.SetField('name', col_row_zoom)
-                    desc = (str(TileX) + "_" + str(TileY) + "_"
-                            + str(int(zoom)) + "\nTile URL: " + URL)
-                    outFeature.SetField('description', desc)
-                else:
-                    print('The tile at {}, {}, {} is not in the AOI.'
-                          .format(TileX, TileY, zoom))
-                    # Tile is in bounding box but not in AOI. Throw it out.
-                    outFeature.SetField('TileX', TileX)
-                    outFeature.SetField('TileY', TileY)
-                    outFeature.SetField('TileZ', zoom)
-                    outFeature.SetField('URL', URL)
-                outLayer.CreateFeature(outFeature)
-                outFeature.Destroy
-
+        # Iterate through all tiles in the AOI at the current zoom level
+        # and create a CSV row for each
+        for TileY in range(TileY_top,TileY_bottom+1):
+            for TileX in range(TileX_left,TileX_right+1):
+                # Calculate lat, lon of upper left corner of tile
+                PixelX = TileX * 256
+                PixelY = TileY * 256
+                MapSize = 256*math.pow(2,zoom)
+                x = (PixelX / MapSize) - 0.5
+                y = 0.5 - (PixelY / MapSize)
+                lon_left = 360 * x
+                lat_top = (90 - 360 * math.atan(math.exp(-y * 2 * math.pi))
+                           / math.pi)
+    
+                # Calculate lat, lon of lower right corner of tile
+                PixelX = (TileX+1) * 256
+                PixelY = (TileY+1) * 256
+                MapSize = 256*math.pow(2,zoom)
+                x = (PixelX / MapSize) - 0.5
+                y = 0.5 - (PixelY / MapSize)
+                lon_right = 360 * x
+                lat_bottom = (90 - 360 * math.atan(math.exp(-y * 2 * math.pi))
+                              / math.pi)
+    
+                # Create Geometry
+                ring = ogr.Geometry(ogr.wkbLinearRing)
+                ring.AddPoint(lon_left, lat_top)
+                ring.AddPoint(lon_right, lat_top)
+                ring.AddPoint(lon_right, lat_bottom)
+                ring.AddPoint(lon_left, lat_bottom)
+                ring.AddPoint(lon_left, lat_top)
+                poly = ogr.Geometry(ogr.wkbPolygon)
+                poly.AddGeometry(ring)
+    
+                # Check if tile is within the polygon of the Area of Interest.
+                intersect = geomcol.Intersect(poly)
+                if intersect == True:
+                    # Tile is in the AOI. Add a row to the CSV for this tile.
+                    l = l+1
+                    outline = poly.ExportToWkt()
+                    #print('The outline is {}'.format(outline))
+                    URL = tile_coords_zoom_and_tileserver_to_URL(
+                        int(TileX), int(TileY), int(zoom),
+                        tileserver, api_key)
+                    fileobj_output.write('\"'+outline+'\"$'+str(TileX)+'$'
+                                         +str(TileY)+'$'+str(zoom)+'$'
+                                         + URL)
+    
+                    outFeature = ogr.Feature(featureDefn)
+                    outFeature.SetGeometry(poly)
+                    if infile_extension == 'kml':
+                        col_row_zoom = (str(TileX)+'_'+str(TileY)+'_'
+                                        +str(int(zoom)))
+                        outFeature.SetField('name', col_row_zoom)
+                        desc = (str(TileX) + "_" + str(TileY) + "_"
+                                + str(int(zoom)) + "\nTile URL: " + URL)
+                        outFeature.SetField('description', desc)
+                    else:
+                        # Tile is in bounding box but not in AOI. Throw it out.
+                        # TODO: Why is this here? Why not just pass?
+                        outFeature.SetField('TileX', TileX)
+                        outFeature.SetField('TileY', TileY)
+                        outFeature.SetField('TileZ', zoom)
+                        outFeature.SetField('URL', URL)
+                    outLayer.CreateFeature(outFeature)
+                    outFeature.Destroy
 
     # Close DataSources - without this you'll get a segfault from OGR.
     outDataSource.Destroy()
 
-    print('############ END ######################################')
-    print('##')
-    print('## input file: '+infile)
-    print('##')
-    print('## zoomlevel: '+str(maxzoomlevel))
-    print('##')
-    print('## output files:')
-    print('#######################################################')
-
+    print('Input file: '+infile)
+    print('Zoom levels: '+str(minzoom) + ' to ' + str(maxzoom))
+    print('Output files:')
+    print()
 
 if __name__ == "__main__":
 
     print()
-    print('Input file:' + sys.argv[1])
-    print('Min zoom: ' + str(sys.argv[2]))
-    print('Max zoom: ' + str(sys.argv[3]))
     print('Tile server: ' + sys.argv[4])
-    print()
 
     if 4 >= len( sys.argv ) >= 5:
         print("[ ERROR ] you must supply at least 3 arguments: "
