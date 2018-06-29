@@ -5,7 +5,7 @@
 Arguments:
     [1] A single-ring polygon, either a local file (shp, KML, GeoJSON) or URL
     [2] A zoom level for the desired output (search tileserver zoom to learn)
-    [3] A tileserver name (bing, digital_globe, or google)
+    [3] A tileserver name (bing, digital_globe_standard, or google)
 
 example run:
     $ python create_tile_list.py polygon.shp 18
@@ -19,8 +19,8 @@ import os
 import sys
 from math import ceil
 import math
-import urlparse
-import urllib
+#import urlparse
+#import urllib
 
 class Point:
     def __init__(self, x=0.0, y=0.0):
@@ -58,10 +58,11 @@ def tile_coords_zoom_and_tileserver_to_URL(
         quadKey = tile_coords_and_zoom_to_quadKey(
             int(TileX),int(TileY),int(zoomlevel))
         URL = quadKey_to_Bing_URL(quadKey, api_key)
-    elif tileserver=='digital_globe':
-        URL = ("https://api.mapbox.com/v4/digitalglobe.nal0g75k/"
-               "{}/{}/{}.png?access_token={}"
-               .format(zoomlevel, TileX, TileY, api_key))
+    elif tileserver=='digital_globe_standard':
+        switchserver='a' # TODO: make this alternate between a-d
+        URL = ("{}.tiles.mapbox.com/v4/digitalglobe.0a8e44ba"
+               "/{}/{}/{}.png?access_token={}"
+               .format(switchserver, zoomlevel, TileX, TileY, api_key))
     elif tileserver=='google':
         URL = ("https://mt0.google.com/vt/lyrs=s&hl=en&x={}&y={}&z={}\n"
                .format(TileX, TileY, zoomlevel))
@@ -69,6 +70,8 @@ def tile_coords_zoom_and_tileserver_to_URL(
         pass
     elif tileserver=='custom':
         pass
+    else:
+        print('\nWhatever tileserver you think you are using is not happening')
 
     return URL
 
@@ -89,51 +92,51 @@ def quadKey_to_Bing_URL(quadKey, api_key):
     """Create a URL linking to a Bing tile server"""
     tile_url = ("http://t0.tiles.virtualearth.net/tiles/a{}.jpeg?"
                 "g=854&mkt=en-US&token={}".format(quadKey, api_key))
-    #print "\nThe tile URL is: {}".format(tile_url)
+    #print("\nThe tile URL is: {}".format(tile_url))
     return tile_url
 
 
 def main(infile, minzoomlevel, maxzoomlevel, tileserver):
     try:
         from osgeo import ogr, osr
-        #print "Import of ogr and osr from osgeo worked.  Hurray!\n"
+        #print("Import of ogr and osr from osgeo worked.  Hurray!\n")
     except:
-        print '############ ERROR ######################################'
-        print '## Import of ogr from osgeo failed\n\n'
-        print '#########################################################'
+        print('############ ERROR ######################################')
+        print('## Import of ogr from osgeo failed\n\n')
+        print('#########################################################')
         sys.exit()
 
     # check if the input is a URL, if so, download it
 
-    parts = urlparse.urlsplit(infile)
-    if parts.scheme:
-        #print('infile is a URL')
-        if not os.path.exists('tmp/'):
-            os.makedirs('tmp')
-        temp_infile = (os.getcwd()) + '/tmp/infile.kml'
-        print(temp_infile)
-        urllib.urlretrieve(infile, temp_infile)
-        print(temp_infile)
-        infile = temp_infile
-
-    else:
-        #print "Infile is not a URL"
-        pass
+#    parts = urlparse.urlsplit(infile)
+#    if parts.scheme:
+#        #print('infile is a URL')
+#        if not os.path.exists('tmp/'):
+#            os.makedirs('tmp')
+#        temp_infile = (os.getcwd()) + '/tmp/infile.kml'
+#        print(temp_infile)
+#        urllib.urlretrieve(infile, temp_infile)
+#        print(temp_infile)
+#        infile = temp_infile
+#
+#    else:
+#        #print("Infile is not a URL")
+#        pass
 
     try:
         infile_name = infile.split('.')[0]
         infile_extension = infile.split('.')[-1]
     except:
-        print "check input file"
+        print("check input file")
         sys.exit()
 
     # Get API key from local text file
     try:
         if tileserver == 'bing':
-            f = open('api_key.txt')
+            f = open('bing_api_key.txt')
             api_key = f.read()
-        elif tileserver == 'digital_globe':
-            f = open('digital_globe_api_key.txt')
+        elif tileserver == 'digital_globe_standard':
+            f = open('api_keys/dg_standard_api_key.txt')
             api_key = f.read()
         elif tileserver == 'google':
             f = open('google_api_key.txt')
@@ -141,7 +144,7 @@ def main(infile, minzoomlevel, maxzoomlevel, tileserver):
         elif tileserver == 'osm':
             pass
     except:
-        print ("Something is wrong with your API key."
+        print("Something is wrong with your API key."
                "Do you even have an API key?")
 
     # Get the driver --> supported formats: Shapefiles, GeoJSON, kml
@@ -152,8 +155,8 @@ def main(infile, minzoomlevel, maxzoomlevel, tileserver):
     elif infile_extension == 'kml':
         driver = ogr.GetDriverByName('KML')
     else:
-        print 'Check input file format for '+infile
-        print 'Supported formats .shp .geojson .kml'
+        print('Check input file format for '+infile)
+        print('Supported formats .shp .geojson .kml')
         sys.exit()
 
     # open the data source
@@ -162,8 +165,8 @@ def main(infile, minzoomlevel, maxzoomlevel, tileserver):
         # Get the data layer
         layer = datasource.GetLayer()
     except:
-        print 'Error, please check input file!'
-        print '## '+infile
+        print('Error, please check input file!')
+        print('## '+infile)
         sys.exit()
 
     # Get layer definition
@@ -182,7 +185,7 @@ def main(infile, minzoomlevel, maxzoomlevel, tileserver):
         geomcol.AddGeometry(feature.GetGeometryRef())
 
     # get Zoomlevel
-    zoom = float(minzoomlevel)
+    zoom = float(maxzoomlevel)
 
     # create output file
     outputGridfn = infile_name + '_tiles.' + infile_extension
@@ -191,7 +194,7 @@ def main(infile, minzoomlevel, maxzoomlevel, tileserver):
     l = 0
     if os.path.exists(outfile):
         os.remove(outfile)
-    fileobj_output = file(outfile,'w')
+    fileobj_output = open(outfile,'w')
     fileobj_output.write('wkt$TileX$TileY$TileZ$URL\n')
 
     outDriver = driver
@@ -260,15 +263,20 @@ def main(infile, minzoomlevel, maxzoomlevel, tileserver):
 
             # Check if tile is within the polygon of the Area of Interest.
             intersect = geomcol.Intersect(poly)
+            print('Checking intersect')
             if intersect == True:
                 # Tile is in the AOI. Add a row to the CSV for this tile.
+                print('The tile at {}, {}, {} is in the AOI.'
+                          .format(TileX, TileY, zoom))
                 l = l+1
-                o_line = poly.ExportToWkt()
+                outline = poly.ExportToWkt()
+                #print('The outline is {}'.format(outline))
                 URL = tile_coords_zoom_and_tileserver_to_URL(
-                    int(TileX), int(TileY), int(zoomlevel),
+                    int(TileX), int(TileY), int(maxzoomlevel),
                     tileserver, api_key)
-                fileobj_output.write('\"'+o_line+'\"$'+str(TileX)+'$'
-                                     +str(TileY)+'$'+str(zoomlevel)+'$'+ URL)
+                print(URL)
+                fileobj_output.write('\"'+outline+'\"$'+str(TileX)+'$'
+                                     +str(TileY)+'$'+str(maxzoomlevel)+'$'+ URL)
 
                 outFeature = ogr.Feature(featureDefn)
                 outFeature.SetGeometry(poly)
@@ -279,6 +287,8 @@ def main(infile, minzoomlevel, maxzoomlevel, tileserver):
                             + str(int(zoom)) + "\nTile URL: " + URL)
                     outFeature.SetField('description', desc)
                 else:
+                    print('The tile at {}, {}, {} is not in the AOI.'
+                          .format(TileX, TileY, zoom))
                     # Tile is in bounding box but not in AOI. Throw it out.
                     outFeature.SetField('TileX', TileX)
                     outFeature.SetField('TileY', TileY)
@@ -291,28 +301,35 @@ def main(infile, minzoomlevel, maxzoomlevel, tileserver):
     # Close DataSources - without this you'll get a segfault from OGR.
     outDataSource.Destroy()
 
-    print '############ END ######################################'
-    print '##'
-    print '## input file: '+infile
-    print '##'
-    print '## zoomlevel: '+str(zoomlevel)
-    print '##'
-    print '## output files:'
-    print '#######################################################'
+    print('############ END ######################################')
+    print('##')
+    print('## input file: '+infile)
+    print('##')
+    print('## zoomlevel: '+str(maxzoomlevel))
+    print('##')
+    print('## output files:')
+    print('#######################################################')
 
 
 if __name__ == "__main__":
 
+    print()
+    print('Input file:' + sys.argv[1])
+    print('Min zoom: ' + str(sys.argv[2]))
+    print('Max zoom: ' + str(sys.argv[3]))
+    print('Tile server: ' + sys.argv[4])
+    print()
+
     if 4 >= len( sys.argv ) >= 5:
-        print("[ ERROR ] you must supply at least 2 arguments: "
-              "(input-shapefile-name.kml or URL pointing to a KML, SHP, "
-              "or GeoJSON polygon) (zoomlevel) (tileserver [optional])")
+        print("[ ERROR ] you must supply at least 3 arguments: "
+              "(A file containing a KML, SHP, or GeoJSON polygon) "
+              "(minzoom) (maxzoom) (tileserver [optional])")
         sys.exit( 1 )
 
-    # Set tileserver to Bing if not specified in 3rd argument
+    # Set tileserver to Digital Globe if not specified in 3rd argument
     if len( sys.argv ) == 3:
-        tileserver='bing'
-        print('Using Bing as default since you did not specify a tileserver')
+        tileserver='digital_globe_standard'
+        print('Using Digital Globe Standard as you did not specify tileserver')
     else:
         tileserver=sys.argv[4]
 
