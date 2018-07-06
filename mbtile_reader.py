@@ -14,7 +14,7 @@ def connect(infile):
     return None
 
 def main(infile):
-    infofilename = 'tiles/output/' + 'info.txt'
+    infofilename = 'tiles/output/' + '01info.txt'
     with open(infofilename, 'w') as infofile:
         connection = connect(infile)
         cursor = connection.cursor()

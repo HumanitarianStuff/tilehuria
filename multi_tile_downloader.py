@@ -6,7 +6,6 @@ Arguments:
 
 Usage:
     
-
 Output:
     Pile 'o' tiles from a tileserver
 
@@ -16,48 +15,50 @@ Example:
 import sys
 import os
 import threading
-
 import csv
-import urllib2
-import urlparse
-import math
 import time
-import logging
+import urllib.request
 
-def fetch(chunk):
-    print(chunk)
+def managechunk(chunk):
+    """Downloads all tiles contained in a chunk (list of tile rows)"""
+    for item in chunk:
+        tile_row = item[0].split(';')
+        url = (tile_row[4])
+        outfilename = ('local_data/tiles/from_dg/{}_{}_{}.png'
+                       .format(tile_row[1], tile_row[2], tile_row[3]))
+        rawdata = urllib.request.urlopen(url).read()
+        print('Writing {}'.format(outfilename))
+        with open(outfilename, 'wb') as outfile:
+            outfile.write(rawdata)
 
-def download(url):
-        try:
-        response = urllib2.urlopen(url)
-    except Exception:
-        logging.exception('Something did not work out with the URL')
-        logging.exception(input_image_url)
-        exit(1)
+def task(inlist, num_threads):
+    header_row = inlist.pop(0)
+    # Break the list into chunks of approximately equal size
+    chunks = [inlist[i::num_threads] for i in range(num_threads)]
+
+    threads = []
+    for chunk in chunks:
+
+        thread = threading.Thread(target=managechunk, args=(chunk,))
+        threads.append(thread)
+        thread.start()
+    for thread in threads:
+        thread.join()
 
 def main(infile):
-    """Eat csv of tile urls, spit out folder full of tiles"""
+    """Eat CSV of tile urls, spit out folder full of tiles"""
     start = time.time()
+
+    (infilename, extension) = os.path.splitext(infile)
+    threads_to_use=50
 
     with open(infile) as csvfile:
         reader = csv.reader(csvfile)
-        tile_rows = list(reader) 
-        header_row = tile_rows.pop(0)
+        tile_rows = list(reader)
+        task(tile_rows, threads_to_use)
 
-        num_threads = 50
-
-        # Break the list into chunks of approximately equal size
-        chunks = [tile_rows[i::num_threads] for i in xrange(num_threads)]
-
-        threads = []
-        for chunk in chunks:
-            thread = threading.Thread(target=compare, args=(chunk))
-            threads.append(thread)
-            thread.start()
-        for thread in threads:
-            thread.join()
-        end = time.time() - start
-        print 'finished. processing tok %i seconds' % end
+    end = time.time() - start
+    print('Finished. Downloading took {} seconds'.format(end))
 
 if __name__ == "__main__":
 

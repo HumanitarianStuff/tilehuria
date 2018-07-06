@@ -60,7 +60,7 @@ def tile_coords_zoom_and_tileserver_to_URL(
         URL = quadKey_to_Bing_URL(quadKey, api_key)
     elif tileserver=='digital_globe_standard':
         switchserver='a' # TODO: make this alternate between a-d
-        URL = ("{}.tiles.mapbox.com/v4/digitalglobe.0a8e44ba"
+        URL = ("https://{}.tiles.mapbox.com/v4/digitalglobe.0a8e44ba"
                "/{}/{}/{}.png?access_token={}"
                .format(switchserver, zoom, TileX, TileY, api_key))
     elif tileserver=='google':
@@ -99,7 +99,7 @@ def quadKey_to_Bing_URL(quadKey, api_key):
 def main(infile, minzoom, maxzoom, tileserver):
     try:
         from osgeo import ogr, osr
-        #print("Import of ogr and osr from osgeo worked.  Hurray!\n")
+        print("Import of ogr and osr from osgeo worked.  Hurray!\n")
     except:
         print('############ ERROR ######################################')
         print('## Import of ogr from osgeo failed\n\n')
@@ -116,13 +116,13 @@ def main(infile, minzoom, maxzoom, tileserver):
     # Get API key from local text file
     try:
         if tileserver == 'bing':
-            f = open('bing_api_key.txt')
+            f = open('api_keys/bing_api_key.txt')
             api_key = f.read()
         elif tileserver == 'digital_globe_standard':
             f = open('api_keys/dg_standard_api_key.txt')
             api_key = f.read()
         elif tileserver == 'google':
-            f = open('google_api_key.txt')
+            f = open('api_keys/google_api_key.txt')
             api_key = f.read()
         elif tileserver == 'osm':
             pass
@@ -170,20 +170,20 @@ def main(infile, minzoom, maxzoom, tileserver):
         geomcol.AddGeometry(feature.GetGeometryRef())
 
     # create output file
-    outputGridfn = infile_name + '_tiles.' + infile_extension
+    outputGridfile = infile_name + '_tiles.' + infile_extension
 
     outfile = infile_name + '_' + tileserver + '_tiles.csv'
     l = 0
     if os.path.exists(outfile):
         os.remove(outfile)
     fileobj_output = open(outfile,'w')
-    fileobj_output.write('wkt$TileX$TileY$TileZ$URL\n')
+    fileobj_output.write('wkt;TileX;TileY;TileZ;URL\n')
 
     outDriver = driver
-    if os.path.exists(outputGridfn):
-        os.remove(outputGridfn)
-    outDataSource = outDriver.CreateDataSource(outputGridfn)
-    outLayer = outDataSource.CreateLayer(outputGridfn,geom_type=ogr.wkbPolygon)
+    if os.path.exists(outputGridfile):
+        os.remove(outputGridfile)
+    outDataSource = outDriver.CreateDataSource(outputGridfile)
+    outLayer = outDataSource.CreateLayer(outputGridfile,geom_type=ogr.wkbPolygon)
     featureDefn = outLayer.GetLayerDefn()
 
     # Iterate through all zoom levels requested
@@ -254,8 +254,8 @@ def main(infile, minzoom, maxzoom, tileserver):
                     URL = tile_coords_zoom_and_tileserver_to_URL(
                         int(TileX), int(TileY), int(zoom),
                         tileserver, api_key)
-                    fileobj_output.write('\"'+outline+'\"$'+str(TileX)+'$'
-                                         +str(TileY)+'$'+str(zoom)+'$'
+                    fileobj_output.write('\"'+outline+'\";'+str(TileX)+';'
+                                         +str(TileY)+';'+str(zoom)+';'
                                          + URL)
     
                     outFeature = ogr.Feature(featureDefn)
@@ -281,14 +281,11 @@ def main(infile, minzoom, maxzoom, tileserver):
     outDataSource.Destroy()
 
     print('Input file: '+infile)
-    print('Zoom levels: '+str(minzoom) + ' to ' + str(maxzoom))
-    print('Output files:')
+    print('Zoom levels: {} to {}'.format(str(minzoom), str(maxzoom)))
+    print('Output files: {} and {}'. format(outfile, outputGridfile))
     print()
 
 if __name__ == "__main__":
-
-    print()
-    print('Tile server: ' + sys.argv[4])
 
     if 4 >= len( sys.argv ) >= 5:
         print("[ ERROR ] you must supply at least 3 arguments: "
@@ -296,11 +293,11 @@ if __name__ == "__main__":
               "(minzoom) (maxzoom) (tileserver [optional])")
         sys.exit( 1 )
 
-    # Set tileserver to Digital Globe if not specified in 3rd argument
-    if len( sys.argv ) == 3:
+    # Set tileserver to Digital Globe Standard if not specified in 4th argument
+    if len( sys.argv ) == 4:
         tileserver='digital_globe_standard'
         print('Using Digital Globe Standard as you did not specify tileserver')
     else:
-        tileserver=sys.argv[4]
+        tileserver=sys.argv[3]
 
     main(sys.argv[1], sys.argv[2], sys.argv[3], tileserver)
