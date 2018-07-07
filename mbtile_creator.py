@@ -5,8 +5,9 @@ https://github.com/mapbox/mbtiles-spec/blob/master/1.3/spec.md
 """
 import sys, os
 import sqlite3
+import argparse
 
-def main(infile):
+def main(infile, tstype, desc, vers, fmt, bnds, cntr, minz, maxz):
     infilename, extension = os.path.splitext(infile)
     sqlite_file = 'local_data/tiles/' + infilename + '.mbtiles'
     db = sqlite3.connect(sqlite_file)
@@ -24,18 +25,16 @@ def main(infile):
     cursor.execute('''
     CREATE UNIQUE INDEX tile_index on tiles (zoom_level, tile_column, tile_row);
     ''')
-    
-    tilesetname = infilename
-    
-    tilesetmetadata = [('name',tilesetname),
-                       ('type','overlay'),
-                       ('description','My Tileset'),
-                       ('version',2.4),
-                       ('format','png'),
-                       ('bounds', '-180.0,-85,180,85'),
-                       ('center', '-122.1906,37.7599,11'),
-                       ('minzoom', 10),
-                       ('maxzoom', 21)]
+
+    tilesetmetadata = [('name',infilename),
+                       ('type', tstype),
+                       ('description', desc),
+                       ('version', vers),
+                       ('format', fmt),
+                       ('bounds', bnds),
+                       ('center', cntr),
+                       ('minzoom', minz),
+                       ('maxzoom', maxz)]
     
     cursor.executemany('''
     INSERT INTO metadata (name, value) VALUES(?,?)
@@ -56,10 +55,17 @@ def main(infile):
     
 if __name__ == "__main__":
 
-    if len( sys.argv ) != 2:
-        print("[ ERROR ] you must supply 1 argument: ")
-        print("1) a CSV file")
+    # Default arguments to be overwritten by user-supplied arguments
+    minz = 16
+    maxz = 20
+    type = overlay
+    parser = argparse.ArgumentParser()
+    parser.add_argument("infile", help = "An input file")
+    parser.add_argument("-mz", "--minzoom", help = "Minimum tile level desired")
+    
+    args = parser.parse_args()
+    infile = args.infile
 
-        sys.exit(1)
 
-    main(sys.argv[1])
+    #main(infile, tstype, desc, vers, fmt, bnds, cntr, minz, maxz)
+    print(infile, tstype, desc, vers, fmt, bnds, cntr, minz, maxz)
