@@ -27,7 +27,7 @@ def managechunk(chunk):
         outfilename = ('local_data/tiles/from_dg/{}_{}_{}.png'
                        .format(tile_row[1], tile_row[2], tile_row[3]))
         rawdata = urllib.request.urlopen(url).read()
-        print('Writing {}'.format(outfilename))
+        print('Thread {} Writing {}'.format(threading.get_ident(),outfilename))
         with open(outfilename, 'wb') as outfile:
             outfile.write(rawdata)
 
