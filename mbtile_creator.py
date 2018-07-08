@@ -7,8 +7,17 @@ import sys, os
 import sqlite3
 import argparse
 
-def main(infile, tstype, desc, vers, fmt, bnds, cntr, minz, maxz):
-    infilename, extension = os.path.splitext(infile)
+def main(infile, minz, maxz, laytype, desc, version, tile_format, tileserver):
+    try:
+        (infilename, extension) = os.path.splitext(infile)
+    except:
+        print('Check input file')
+        sys.exit()
+
+    # Call the tile list creator to make a CSV. Get the bounds, center, tileserver 
+
+
+
     sqlite_file = 'local_data/tiles/' + infilename + '.mbtiles'
     db = sqlite3.connect(sqlite_file)
     cursor = db.cursor()
@@ -26,11 +35,11 @@ def main(infile, tstype, desc, vers, fmt, bnds, cntr, minz, maxz):
     CREATE UNIQUE INDEX tile_index on tiles (zoom_level, tile_column, tile_row);
     ''')
 
-    tilesetmetadata = [('name',infilename),
-                       ('type', tstype),
+    tilesetmetadata = [('name', infilename),
+                       ('type', laytype),
                        ('description', desc),
-                       ('version', vers),
-                       ('format', fmt),
+                       ('version', version),
+                       ('format', tile_format),
                        ('bounds', bnds),
                        ('center', cntr),
                        ('minzoom', minz),
@@ -54,18 +63,30 @@ def main(infile, tstype, desc, vers, fmt, bnds, cntr, minz, maxz):
     db.close()
     
 if __name__ == "__main__":
-
-    # Default arguments to be overwritten by user-supplied arguments
-    minz = 16
-    maxz = 20
-    type = overlay
+    
     parser = argparse.ArgumentParser()
-    parser.add_argument("infile", help = "An input file")
-    parser.add_argument("-mz", "--minzoom", help = "Minimum tile level desired")
+    parser.add_argument("infile", help = "An input file as GeoJSON, shp, KML, "
+                        "or gpkg, containing exactly one polygon.")
+    parser.add_argument("-minz", "--minzoom", help = "Minimum tile level desired")
+    parser.add_argument("-maxz", "--maxzoom", help = "Maximum tile level desired")
+    parser.add_argument("-d", "--description", help = "Description of the tileset")
+    parser.add_argument("-tp", "--type", help = "Tileset type: overlay or baselayer")
+    parser.add_argument("-ver", "--version", help = "Version of the tileset")
+    parser.add_argument("-f", "--format", help = "Format of the tile images"
+                        ", png, png8, or jpeg")
+    parser.add_argument("-ts", "--tileserver", help = "A tile server where the"
+                        "needed tiles can be downloaded: digital_globe_standard, "
+                        "digital_globe_premium, bing, etc")
     
     args = parser.parse_args()
+    
     infile = args.infile
+    minz = args.minzoom if args.minzoom else 16
+    maxz = args.maxzoom if args.maxzoom else 20
+    laytype = args.type if args.type else 'baselayer'
+    version = args.version if args.version else '1.0'
+    tile_format = args.format if args.format else 'png'
+    desc = args.description if args.description else 'A set of MBTiles'
+    tileserver = args.tileserver if args.tileserver else 'digital_globe_standard'
 
-
-    #main(infile, tstype, desc, vers, fmt, bnds, cntr, minz, maxz)
-    print(infile, tstype, desc, vers, fmt, bnds, cntr, minz, maxz)
+    main(infile, minz, maxz, laytype, desc, version, tile_format, tileserver)
