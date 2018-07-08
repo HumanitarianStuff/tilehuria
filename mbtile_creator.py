@@ -9,6 +9,7 @@ import argparse
 
 def main(infile, configfile, indir):
     (infilename, extension) = os.path.splitext(infile)
+    basename = os.path.splitext(os.path.basename(infile))[0]
 
     # Extract parameters from config file
     config_list = open(configfile).read().splitlines()
@@ -41,7 +42,7 @@ def main(infile, configfile, indir):
 
     #TODO: add a few more items such as Atribution and Center
     #TODO: might as well have the cursor iterate over the dict instead of this list
-    tilesetmetadata = [('name', infilename),
+    tilesetmetadata = [('name', basename),
                        ('type', config_dict['type']),
                        ('description', config_dict['description']),
                        ('version', config_dict['version']),
@@ -64,7 +65,7 @@ def main(infile, configfile, indir):
         # Extract Z, X, Y from image file name; assumes tile files are named x_y_z.ext
         (image_filename, image_extension) = os.path.splitext(image_file)
         print(image_filename)
-        (x,y,z) = image_filename.split('_')
+        (z, x, y) = image_filename.split('_')
         cursor.execute('''
         INSERT INTO tiles (zoom_level, tile_column, tile_row, tile_data) 
                            VALUES(?,?,?,?)
