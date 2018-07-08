@@ -1,6 +1,6 @@
 #!/bin/python3
 # Ivan Buendia Gayton, Humanitarian OpenStreetMap Team/Ramani Huria 2018
-"""Create a CSV document containing a list of URLs of tiles from a Tile Map Service. (TMS or tileserver).
+"""Create a CSV document containing a list of URLs of tiles from a Tile Map Service (TMS or tileserver).
 
 Arguments:
 
@@ -105,43 +105,31 @@ def quadKey_to_Bing_URL(quadKey, api_key):
                 "g=854&mkt=en-US&token={}".format(quadKey, api_key))
     return tile_url
 
-def main(infile, minzoom, maxzoom, tileserver):
-    """Do some stuff"""
+def main(infile, minzoom, maxzoom, tileserver, laytype, version, desc):
+    """Read a polygon file and create a set of output files to create tiles"""
     (infilename, extension) = os.path.splitext(infile)
     api_key = get_api_key(tileserver)
     driver = get_ogr_driver(extension)
     datasource = driver.Open(infile, 0)
-
-    try:
-        layer = datasource.GetLayer()
-    except:
-        print('Error, please check input file!' + infile)
-        sys.exit()
-
+    layer = datasource.GetLayer()
     layer_defn = layer.GetLayerDefn()
-
     extent = layer.GetExtent()
-    xmin = extent[0]
-    xmax = extent[1]
-    ymin = extent[2]
-    ymax = extent[3]
-
+    (xmin, xmax, ymin, ymax) = (extent[0], extent[1], extent[2], extent[3])
     geomcol = ogr.Geometry(ogr.wkbGeometryCollection)
     for feature in layer:
         geomcol.AddGeometry(feature.GetGeometryRef())
-
-    # Create a new geographical file of the same type as the input file
-    # which will contain polygon outlines of all tiles
-    outputGridfile = infilename + '_tiles' + extension
 
     # Create the main output file which will contain the URL list
     #TODO use the CSV library for this instead of just writing strings
     outfile = infilename + '_' + tileserver + '_tiles.csv'
     if os.path.exists(outfile):
         os.remove(outfile)
-    output_csv = open(outfile,'w')
+    output_csv = open(outfile, 'w')
     output_csv.write('wkt;TileX;TileY;TileZ;URL\n')
 
+    # Create a new geographical file of the same type as the input file
+    # which will contain polygon outlines of all tiles
+    outputGridfile = infilename + '_tiles' + extension    
     if os.path.exists(outputGridfile):
         os.remove(outputGridfile)
     outDataSource = driver.CreateDataSource(outputGridfile)
@@ -231,9 +219,21 @@ def main(infile, minzoom, maxzoom, tileserver):
     # Close DataSources - without this you'll get a segfault from OGR.
     outDataSource.Destroy()
 
-    print('Input file: '+infile)
+    # Create a text file which will contain parameters for the creation of mbtiles
+    outputConfigfile = infilename + '_config.txt'
+    if os.path.exists(outputConfigfile):
+        os.remove(outputConfigfile)
+    output_config = open(outputConfigfile, 'w')
+    output_config.write('bounds={},{},{},{}\n'.format(xmin, ymin, xmax, ymax))
+    output_config.write('type={}\n'.format(laytype))
+    output_config.write('version={}\n'.format(version))
+    output_config.write('description={}\n'.format(desc))
+
+    # Inform the user of completion and summarize created assets to stdout
+    print('\nInput file: '+infile)
     print('Zoom levels: {} to {}'.format(str(minzoom), str(maxzoom)))
-    print('Output files:\n{}\n{}'. format(outfile, outputGridfile))
+    print('Output files:\n{}\n{}\n{}'
+          .format(outfile, outputGridfile, outputConfigfile))
     print()
 
 if __name__ == "__main__":
@@ -243,24 +243,23 @@ if __name__ == "__main__":
                         "or gpkg, containing exactly one polygon.")
     parser.add_argument("-minz", "--minzoom", help = "Minimum tile level desired")
     parser.add_argument("-maxz", "--maxzoom", help = "Maximum tile level desired")
-    parser.add_argument("-d", "--description", help = "Description of the tileset")
-    parser.add_argument("-tp", "--type", help = "Tileset type: overlay or baselayer")
-    parser.add_argument("-ver", "--version", help = "Version of the tileset")
-    parser.add_argument("-f", "--format", help = "Format of the tile images"
-                        ", png, png8, or jpeg")
     parser.add_argument("-ts", "--tileserver", help = "A tile server where the"
                         "needed tiles can be downloaded: digital_globe_standard, "
                         "digital_globe_premium, bing, etc")
+    parser.add_argument("-d", "--description", help = "Description of the tileset")
+    parser.add_argument("-tp", "--type", help = "Tileset type: overlay or baselayer")
+    parser.add_argument("-ver", "--version", help = "Version of the tileset")
+    
     
     args = parser.parse_args()
     
     infile = args.infile
     minz = args.minzoom if args.minzoom else 16
     maxz = args.maxzoom if args.maxzoom else 20
-    laytype = args.type if args.type else 'baselayer'
-    version = args.version if args.version else '1.0'
-    tile_format = args.format if args.format else 'png'
-    desc = args.description if args.description else 'A set of MBTiles'
     tileserver = args.tileserver if args.tileserver else 'digital_globe_standard'
+    laytype = args.type if args.type else 'overlay'
+    version = args.version if args.version else '1.1'
+    desc = args.description if args.description else 'A set of MBTiles'
+    
 
-    main(infile, minz, maxz, tileserver)
+    main(infile, minz, maxz, tileserver, laytype, version, desc)
