@@ -121,7 +121,7 @@ def main(infile, minzoom, maxzoom, tileserver, laytype, version, desc):
 
     # Create the main output file which will contain the URL list
     #TODO use the CSV library for this instead of just writing strings
-    outfile = infilename + '_' + tileserver + '_tiles.csv'
+    outfile = infilename + '_' + tileserver + '.csv'
     if os.path.exists(outfile):
         os.remove(outfile)
     output_csv = open(outfile, 'w')
@@ -129,7 +129,7 @@ def main(infile, minzoom, maxzoom, tileserver, laytype, version, desc):
 
     # Create a new geographical file of the same type as the input file
     # which will contain polygon outlines of all tiles
-    outputGridfile = infilename + '_tiles' + extension    
+    outputGridfile = infilename + '_tile_perimeters' + extension    
     if os.path.exists(outputGridfile):
         os.remove(outputGridfile)
     outDataSource = driver.CreateDataSource(outputGridfile)
@@ -220,7 +220,7 @@ def main(infile, minzoom, maxzoom, tileserver, laytype, version, desc):
     outDataSource.Destroy()
 
     # Create a text file which will contain parameters for the creation of mbtiles
-    outputConfigfile = infilename + '_config.txt'
+    outputConfigfile = infilename + '_' + tileserver + '_config.txt'
     if os.path.exists(outputConfigfile):
         os.remove(outputConfigfile)
     output_config = open(outputConfigfile, 'w')

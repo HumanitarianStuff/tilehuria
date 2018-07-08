@@ -14,7 +14,9 @@ def connect(infile):
     return None
 
 def main(infile):
-    infofilename = 'tiles/output/' + '01info.txt'
+    (infilename, extension) = os.path.splitext(infile)
+    
+    infofilename = infilename + '_info.txt'
     with open(infofilename, 'w') as infofile:
         connection = connect(infile)
         cursor = connection.cursor()
@@ -67,10 +69,10 @@ def main(infile):
             infofile.write(str(row[0]) + '_' + str(row[1]) + '_' + str(row[2]) \
                            + '.png')
             infofile.write('\n')
-            outfilename = 'tiles/output/images/' + str(row[0])\
-                          + '_' + str(row[1]) + '_' + str(row[2]) + '.png'
-            with open(outfilename, 'wb') as outfile:
-                outfile.write(row[3])
+#            outfilename = 'tiles/output/images/' + str(row[0])\
+#                          + '_' + str(row[1]) + '_' + str(row[2]) + '.png'
+#            with open(outfilename, 'wb') as outfile:
+#                outfile.write(row[3])
     
         cursor.close()
         connection.close()
