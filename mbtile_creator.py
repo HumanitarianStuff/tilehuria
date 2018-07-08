@@ -6,6 +6,7 @@ https://github.com/mapbox/mbtiles-spec/blob/master/1.3/spec.md
 import sys, os
 import sqlite3
 import argparse
+import math
 
 def main(infile, configfile, indir):
     (infilename, extension) = os.path.splitext(infile)
@@ -27,9 +28,7 @@ def main(infile, configfile, indir):
     db = sqlite3.connect(sqlite_file)
     cursor = db.cursor()
     
-    cursor.execute('''
-    CREATE TABLE metadata (name TEXT, value TEXT);
-    ''')
+    cursor.execute('CREATE TABLE metadata (name TEXT, value TEXT);')
     
     cursor.execute('''
     CREATE TABLE tiles (zoom_level INTEGER, tile_column INTEGER, 
@@ -59,13 +58,14 @@ def main(infile, configfile, indir):
     image_files = os.listdir(indir)
 
     for image_file in image_files:
-        #TODO: fix this so it also works on Windows
         image_blob = open(indir + '/' + image_file, "rb").read()
 
-        # Extract Z, X, Y from image file name; assumes tile files are named x_y_z.ext
+        # Extract Z, X, Y from image file name; assume tiles are named like z_x_y.png
         (image_filename, image_extension) = os.path.splitext(image_file)
         print(image_filename)
-        (z, x, y) = image_filename.split('_')
+        (z, x, tiley) = image_filename.split('_')
+        # MBTiles spec Y is upside down - subtract the tile y from max tile y
+        y = int(math.pow(2.0, float(z)) - float(tiley) - 1.0)
         cursor.execute('''
         INSERT INTO tiles (zoom_level, tile_column, tile_row, tile_data) 
                            VALUES(?,?,?,?)

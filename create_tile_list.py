@@ -211,8 +211,11 @@ def main(infile, minzoom, maxzoom, tileserver, laytype, version, desc):
                                 + str(int(zoom)) + "\nTile URL: " + URL)
                         outFeature.SetField('description', desc)
                     else:
-                        # Tile is in bounding box but not in AOI. Throw it out.
-                        pass
+                        outFeature.SetField('TileX', TileX)
+                        outFeature.SetField('TileY', TileY)
+                        outFeature.SetField('TileZ', zoom)
+                        outFeature.SetField('URL', URL)
+
                     outLayer.CreateFeature(outFeature)
                     outFeature.Destroy
 
