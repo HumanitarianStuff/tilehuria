@@ -28,8 +28,10 @@ def managechunk(chunk, outdirpath):
                        .format(outdirpath, tile_row[3], tile_row[1], tile_row[2]))
         rawdata = urllib.request.urlopen(url).read()
         print('Thread {} Writing {}'.format(threading.get_ident(),outfilename))
-        with open(outfilename, 'wb') as outfile:
-            outfile.write(rawdata)
+        # if the file is less than 116 bytes, there's no tile at this level
+        if(len(rawdata) > 116):
+            with open(outfilename, 'wb') as outfile:
+                outfile.write(rawdata)
 
 def task(inlist, num_threads, outdirpath):
     header_row = inlist.pop(0)
@@ -57,6 +59,8 @@ def main(infile):
     with open(infile) as csvfile:
         reader = csv.reader(csvfile)
         tile_rows = list(reader)
+        if(len(tile_rows)) < 100:
+           threads_to_use = int(len(tile_rows)/2)
         task(tile_rows, threads_to_use, outdirpath)
 
     end = time.time() - start
