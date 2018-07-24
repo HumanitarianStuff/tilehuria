@@ -26,7 +26,12 @@ def managechunk(chunk, outdirpath):
         url = (tile_row[4])
         outfilename = ('{}{}_{}_{}.png'
                        .format(outdirpath, tile_row[3], tile_row[1], tile_row[2]))
-        rawdata = urllib.request.urlopen(url).read()
+        #TODO set a timeout for the request
+        try:
+            rawdata = urllib.request.urlopen(url, timeout=10).read()
+        except:
+            print('Thread {} timed out on {}'
+                  .format(threading.get_ident(),outfilename))
         print('Thread {} Writing {}'.format(threading.get_ident(),outfilename))
         # if the file is less than 116 bytes, there's no tile at this level
         if(len(rawdata) > 116):
