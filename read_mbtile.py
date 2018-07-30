@@ -13,6 +13,10 @@ def connect(infile):
         
     return None
 
+def check_dir(path):
+    if not os.path.exists(path):
+        outdir = os.makedirs(path)
+
 def main(infile):
     (infilename, extension) = os.path.splitext(infile)
 
@@ -62,6 +66,9 @@ def main(infile):
             infofile.write(column[0])
             infofile.write('\n')
         infofile.write('\n')
+
+        #TODO Read tile format from metadata table instead of hardcoding
+        tformat = 'jpeg'
     
         infofile.write('Number of rows in tiles table: ')
         rows = cursor.fetchall()
@@ -70,11 +77,10 @@ def main(infile):
 
         infofile.write('Individual tile filenames: \n')
         for row in rows:
-            infofile.write(str(row[0]) + '_' + str(row[1]) + '_' + str(row[2]) \
-                           + '.png')
-            infofile.write('\n')
-            outfilename = ('{}{}_{}_{}.png'
-                       .format(outdirpath, row[0], row[1], row[2]))
+            (z, x, y) = (str(row[0]), str(row[1]), str(row[2]))
+            infofile.write('{}_{}_{}.{}\n'.format(z,x,y,tformat))
+            check_dir('{}{}/{}'.format(outdirpath, z, x))
+            outfilename = ('{}{}/{}/{}.{}'.format(outdirpath, z, x, y, tformat))
             print(outfilename)
             with open(outfilename, 'wb') as outfile:
                 outfile.write(row[3])
