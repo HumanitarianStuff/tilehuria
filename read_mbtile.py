@@ -78,7 +78,7 @@ def main(infile):
         infofile.write('Individual tile filenames: \n')
         for row in rows:
             (z, x, y) = (str(row[0]), str(row[1]), str(row[2]))
-            infofile.write('{}_{}_{}.{}\n'.format(z,x,y,tformat))
+            infofile.write('{}/{}/{}/{}\n'.format(z,x,y,tformat))
             check_dir('{}{}/{}'.format(outdirpath, z, x))
             outfilename = ('{}{}/{}/{}.{}'.format(outdirpath, z, x, y, tformat))
             print(outfilename)

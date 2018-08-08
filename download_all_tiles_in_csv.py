@@ -19,20 +19,25 @@ import csv
 import time
 import urllib.request
 
+def check_dir(path):
+    if not os.path.exists(path):
+        outdir = os.makedirs(path)
+
 def managechunk(chunk, outdirpath):
     """Downloads all tiles contained in a chunk (list of tile rows)"""
     for item in chunk:
-        tile_row = item[0].split(';')
-        url = (tile_row[4])
-        outfilename = ('{}{}_{}_{}.png'
-                       .format(outdirpath, tile_row[3], tile_row[1], tile_row[2]))
-        #TODO set a timeout for the request
+        row = item[0].split(';')
+        url = (row[4])
+        (z, x, y) = (str(row[3]), str(row[1]), str(row[2]))
+        check_dir('{}{}/{}'.format(outdirpath, z, x))
+        outfilename = ('{}/{}/{}/{}.png'.format(outdirpath, z, x, y))
         try:
             rawdata = urllib.request.urlopen(url, timeout=10).read()
         except:
             print('Thread {} timed out on {}'
                   .format(threading.get_ident(),outfilename))
-        print('Thread {} Writing {}'.format(threading.get_ident(),outfilename))
+        # print('Thread {} Writing {}'
+        #      .format(threading.get_ident(),outfilename))
         # if the file is less than 116 bytes, there's no tile at this level
         if(len(rawdata) > 116):
             with open(outfilename, 'wb') as outfile:
@@ -56,8 +61,7 @@ def main(infile):
     """Eat CSV of tile urls, spit out folder full of tiles"""
     (infilename, extension) = os.path.splitext(infile)
     outdirpath = '{}/'.format(infilename)
-    if not os.path.exists(outdirpath):
-        outdir = os.makedirs(outdirpath)
+    check_dir(outdirpath)
     threads_to_use=50
     
     start = time.time()

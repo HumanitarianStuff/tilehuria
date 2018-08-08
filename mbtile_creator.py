@@ -8,6 +8,20 @@ import sqlite3
 import argparse
 import math
 
+def scandir(dir):
+    filelist = []
+    for path, dirs, files in os.walk(dir):
+        for f in files:
+            filelist.append(os.path.join(path, f))
+    return filelist
+
+def splitpathtozxy(path):
+    splitpath = path.split('/')
+    l = len(splitpath)
+    (z,x,y) = (splitpath[l-3], splitpath[l-2], splitpath[l-1].split('.')[0])
+    return (z,x,y)
+
+
 def main(infile, configfile, indir):
     (infilename, extension) = os.path.splitext(infile)
     basename = os.path.splitext(os.path.basename(infile))[0]
@@ -55,15 +69,17 @@ def main(infile, configfile, indir):
     ''',tilesetmetadata)
     db.commit()
 
-    image_files = os.listdir(indir)
+    # walk the folder full of tiles
+    
+    image_files = scandir(indir)
 
     for image_file in image_files:
-        image_blob = open(indir + '/' + image_file, "rb").read()
+        image_blob = open(image_file, "rb").read()
 
-        # Extract Z, X, Y from image file name; assume tiles are named like z_x_y.png
+        # Extract Z, X, Y from image file path
         (image_filename, image_extension) = os.path.splitext(image_file)
         print(image_filename)
-        (z, x, tiley) = image_filename.split('_')
+        (z, x, tiley) = splitpathtozxy(image_filename)
         # MBTiles spec Y is upside down - subtract the tile y from max tile y
         y = int(math.pow(2.0, float(z)) - float(tiley) - 1.0)
         cursor.execute('''
