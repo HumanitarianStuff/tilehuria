@@ -21,6 +21,8 @@ import urllib.request
 
 def check_dir(path):
     if not os.path.exists(path):
+        # TODO: this fails in case of race condition! Need to create folders
+        # Before launching multiple threads!
         outdir = os.makedirs(path)
 
 def managechunk(chunk, outdirpath):

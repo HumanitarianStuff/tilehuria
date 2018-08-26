@@ -78,7 +78,7 @@ def main(infile, configfile, indir):
 
         # Extract Z, X, Y from image file path
         (image_filename, image_extension) = os.path.splitext(image_file)
-        print(image_filename)
+        print('{}{}'.format(image_filename, image_extension))
         (z, x, tiley) = splitpathtozxy(image_filename)
         # MBTiles spec Y is upside down - subtract the tile y from max tile y
         y = int(math.pow(2.0, float(z)) - float(tiley) - 1.0)
