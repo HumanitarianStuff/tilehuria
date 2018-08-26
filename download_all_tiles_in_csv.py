@@ -20,42 +20,55 @@ import time
 import urllib.request
 
 def check_dir(path):
+    """If a directory does not exist, create it. Not thread-safe!"""
     if not os.path.exists(path):
-        # TODO: this fails in case of race condition! Need to create folders
-        # Before launching multiple threads!
         outdir = os.makedirs(path)
 
+#TODO arg for the failed chunks: def managechunk(chunk, outdirpath, chunkfailedlines):
 def managechunk(chunk, outdirpath):
-    """Downloads all tiles contained in a chunk (list of tile rows)"""
+    """Downloads all tiles contained in a chunk (sub-list of tile rows)"""
+
+    chunkfailedlines = []
     for item in chunk:
         row = item[0].split(';')
         url = (row[4])
         (z, x, y) = (str(row[3]), str(row[1]), str(row[2]))
-        check_dir('{}{}/{}'.format(outdirpath, z, x))
         outfilename = ('{}/{}/{}/{}.png'.format(outdirpath, z, x, y))
+        
+        rawdata = None
         try:
             rawdata = urllib.request.urlopen(url, timeout=10).read()
         except:
-            print('Thread {} timed out on {}'
-                  .format(threading.get_ident(),outfilename))
-        # print('Thread {} Writing {}'
-        #      .format(threading.get_ident(),outfilename))
-        # if the file is less than 116 bytes, there's no tile at this level
-        if(len(rawdata) > 116):
-            with open(outfilename, 'wb') as outfile:
-                outfile.write(rawdata)
+            #print('Thread {} timed out on {}'
+            #      .format(threading.get_ident(),outfilename))
+            chunkfailedlines.append(url)
+            
+        if(rawdata):
+            # if the file is less than 116 bytes, there's no tile at this level
+            if(len(rawdata) > 116):
+                with open(outfilename, 'wb') as outfile:
+                    outfile.write(rawdata)
+    return chunkfailedlines
 
 def task(inlist, num_threads, outdirpath):
     header_row = inlist.pop(0)
     # Break the list into chunks of approximately equal size
     chunks = [inlist[i::num_threads] for i in range(num_threads)]
 
-    threads = []
-    for chunk in chunks:
+    # Create folder structure (must do before tasking for thread safety)
+    for line in inlist:
+        row = line[0].split(';')
+        (z, x) = (str(row[3]), str(row[1]), )
+        check_dir('{}{}/{}'.format(outdirpath, z, x))
 
+    threads = []
+
+    #TODO Send off an empty list to each chunk manager to get failed lines back
+    for chunk in chunks:
         thread = threading.Thread(target=managechunk, args=(chunk, outdirpath))
         threads.append(thread)
         thread.start()
+
     for thread in threads:
         thread.join()
 

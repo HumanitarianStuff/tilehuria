@@ -92,7 +92,6 @@ def main(infile, configfile, indir):
     db.close()
     
 if __name__ == "__main__":
-    
     parser = argparse.ArgumentParser()
     parser.add_argument("infile", help = "An input file as GeoJSON, shp, KML, "
                         "or gpkg, containing exactly one polygon.")

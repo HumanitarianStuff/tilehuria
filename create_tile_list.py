@@ -2,9 +2,25 @@
 # Ivan Buendia Gayton, Humanitarian OpenStreetMap Team/Ramani Huria 2018
 """Create a CSV document containing a list of URLs of tiles from a Tile Map Service (TMS or tileserver).
 
-Arguments:
+Arguments (using bash-style flags):
+
+infile: An input file as GeoJSON, shp, KML, or gpkg, containing exactly one polygon.
+
+-minz, --minzoom",Minimum tile level desired
+-maxz, --maxzoom",Maximum tile level desired
+-ts, --tileserver",A tile server where the needed tiles can be downloaded: digital_globe_standard digital_globe_premium, bing, etc
+-d, --description",Description of the tileset
+-tp, --type,Tileset type: overlay or baselayer
+-ver, --version",Version of the tileset
+
 
 examples:
+
+python3 create_tile_list.py /path/to/myPolygon.geojson
+
+or, if the default zoom levels are not appropriate:
+
+python3 create_tile_list.py /path/to/myPolygon.geojson -minz 15 -maxz 21
 
 """
 #TODO: write up a proper docstring with the new argparse parameters and examples
