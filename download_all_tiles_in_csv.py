@@ -28,6 +28,8 @@ def parse_url_for_imtype(url):
     imtype = 'png'
     if('.jpeg' in url or '.jpg' in url):
         imtype = 'jpeg'
+    if('google' in url):
+        imtype = 'jpeg'
     return imtype
 
 def managechunk(chunk, outdirpath):

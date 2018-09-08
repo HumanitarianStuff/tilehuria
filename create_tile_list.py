@@ -8,10 +8,6 @@ infile: An input file as GeoJSON, shp, KML, or gpkg, containing exactly one poly
 -minz, --minzoom",Minimum tile level desired
 -maxz, --maxzoom",Maximum tile level desired
 -ts, --tileserver",A tile server where the needed tiles can be downloaded: digital_globe_standard digital_globe_premium, bing, etc
--d, --description",Description of the tileset
--tp, --type,Tileset type: overlay or baselayer
--ver, --version",Version of the tileset
-
 
 examples:
 
@@ -122,7 +118,7 @@ def tile_coords_and_zoom_to_quadKey(x, y, zoom):
         quadKey += str(digit)
     return quadKey
 
-def main(infile, minzoom, maxzoom, tileserver, laytype, version, desc):
+def main(infile, minzoom, maxzoom, tileserver):
     """Read a polygon file and create a set of output files to create tiles"""
     (infilename, extension) = os.path.splitext(infile)
     driver = get_ogr_driver(extension)
@@ -236,21 +232,11 @@ def main(infile, minzoom, maxzoom, tileserver, laytype, version, desc):
     # Close DataSources - without this you'll get a segfault from OGR.
     outDataSource.Destroy()
 
-    # Create a text file which will contain parameters for the creation of mbtiles
-    outputConfigfile = infilename + '_' + tileserver + '_config.txt'
-    if os.path.exists(outputConfigfile):
-        os.remove(outputConfigfile)
-    output_config = open(outputConfigfile, 'w')
-    output_config.write('bounds={},{},{},{}\n'.format(xmin, ymin, xmax, ymax))
-    output_config.write('type={}\n'.format(laytype))
-    output_config.write('version={}\n'.format(version))
-    output_config.write('description={}\n'.format(desc))
-
     # Inform the user of completion and summarize created assets to stdout
     print('\nInput file: '+infile)
     print('Zoom levels: {} to {}'.format(str(minzoom), str(maxzoom)))
-    print('Output files:\n{}\n{}\n{}'
-          .format(outfile, outputGridfile, outputConfigfile))
+    print('Output files:\n{}\n{}\n'
+          .format(outfile, outputGridfile))
     print()
 
 if __name__ == "__main__":
@@ -263,10 +249,6 @@ if __name__ == "__main__":
     parser.add_argument("-ts", "--tileserver", help = "A tile server where the"
                         "needed tiles can be downloaded: digital_globe_standard, "
                         "digital_globe_premium, bing, etc")
-    parser.add_argument("-d", "--description", help = "Description of the tileset")
-    parser.add_argument("-tp", "--type", help = "Tileset type: overlay or baselayer")
-    parser.add_argument("-ver", "--version", help = "Version of the tileset")
-    
     
     args = parser.parse_args()
     
@@ -274,10 +256,7 @@ if __name__ == "__main__":
     minz = args.minzoom if args.minzoom else 16
     maxz = args.maxzoom if args.maxzoom else 20
     tileserver = args.tileserver if args.tileserver else 'digital_globe_standard'
-    laytype = args.type if args.type else 'overlay'
-    version = args.version if args.version else '1.1'
-    desc = args.description if args.description else 'A set of MBTiles'
 
     print('tileserver is {}'.format(tileserver))
 
-    main(infile, minz, maxz, tileserver, laytype, version, desc)
+    main(infile, minz, maxz, tileserver)
