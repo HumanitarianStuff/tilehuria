@@ -79,7 +79,7 @@ def tile_coords_zoom_and_tileserver_to_URL(TileX, TileY, zoom, tileserver):
         quadKey = tile_coords_and_zoom_to_quadKey(
             int(TileX),int(TileY),int(zoom))
         switchserver = random.choice([0,1,2,3])
-        URL = ("http://t0.tiles.virtualearth.net/tiles/a{}.jpeg?"
+        URL = ("http://t{}.tiles.virtualearth.net/tiles/a{}.jpeg?"
                 "g=854&mkt=en-US&token="
                "AopsdXjtTu-IwNoCTiZBtgRJ1g7yPkzAi65nXplc-eLJwZHYlAIf2yuSY_Kjg3Wn"
                .format(switchserver, quadKey))

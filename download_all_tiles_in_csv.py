@@ -24,7 +24,12 @@ def check_dir(path):
     if not os.path.exists(path):
         outdir = os.makedirs(path)
 
-#TODO arg for the failed chunks: def managechunk(chunk, outdirpath, chunkfailedlines):
+def parse_url_for_imtype(url):
+    imtype = 'png'
+    if('.jpeg' in url or '.jpg' in url):
+        imtype = 'jpeg'
+    return imtype
+
 def managechunk(chunk, outdirpath):
     """Downloads all tiles contained in a chunk (sub-list of tile rows)"""
 
@@ -33,29 +38,31 @@ def managechunk(chunk, outdirpath):
         row = item[0].split(';')
         url = (row[4])
         (z, x, y) = (str(row[3]), str(row[1]), str(row[2]))
-        outfilename = ('{}/{}/{}/{}.png'.format(outdirpath, z, x, y))
         
         rawdata = None
         try:
             rawdata = urllib.request.urlopen(url, timeout=10).read()
         except:
-            #print('Thread {} timed out on {}'
-            #      .format(threading.get_ident(),outfilename))
-            chunkfailedlines.append(url)
-            
+            # Download failed. Create a text file called {y}.timeout containing URL
+            outfilename = ('{}/{}/{}/{}.{}'.format(outdirpath, z, x, y, 'timeout'))
+            with open(outfilename, 'w') as outfile:
+                outfile.write(url)
+                
         if(rawdata):
-            # if the file is less than 116 bytes, there's no tile at this level
-            if(len(rawdata) > 116):
+            imtype = parse_url_for_imtype(url)
+            outfilename = ('{}/{}/{}/{}.{}'.format(outdirpath, z, x, y, imtype))
+            
+            # if the file is less than 1040 bytes, there's no tile here. Save nothing.
+            if(len(rawdata) > 1040):
                 with open(outfilename, 'wb') as outfile:
                     outfile.write(rawdata)
-    return chunkfailedlines
 
 def task(inlist, num_threads, outdirpath):
     header_row = inlist.pop(0)
     # Break the list into chunks of approximately equal size
     chunks = [inlist[i::num_threads] for i in range(num_threads)]
 
-    # Create folder structure (must do before tasking for thread safety)
+    # Create Tilestash-type folder structure (before tasking for thread safety)
     for line in inlist:
         row = line[0].split(';')
         (z, x) = (str(row[3]), str(row[1]), )
