@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 
 import sys, os
+import math
 import sqlite3
 from sqlite3 import Error
 
@@ -50,12 +51,10 @@ def main(infile):
         infofile.write('\n')
         infofile.write('Rows in metadata table:\n')
         rows = cursor.fetchall()
-        for row in rows:
-            for info in row:
-                if(info != None):
-                    infofile.write(info)
-                    infofile.write(' ')
-            infofile.write('\n')
+        metadata_dict = dict(rows)
+        for item in metadata_dict:
+            infofile.write('{} {}\n'.format(item, metadata_dict[item]))
+        image_format = metadata_dict['format']
         infofile.write('\n')
     
         # infofile.write all rows in tiles table
@@ -68,7 +67,6 @@ def main(infile):
         infofile.write('\n')
 
         #TODO Read tile format from metadata table instead of hardcoding
-        tformat = 'jpeg'
     
         infofile.write('Number of rows in tiles table: ')
         rows = cursor.fetchall()
@@ -77,11 +75,12 @@ def main(infile):
 
         infofile.write('Individual tile filenames: \n')
         for row in rows:
-            (z, x, y) = (str(row[0]), str(row[1]), str(row[2]))
-            infofile.write('{}/{}/{}/{}\n'.format(z,x,y,tformat))
+            (z, x, tiley) = (str(row[0]), str(row[1]), str(row[2]))
+            y = int(math.pow(2.0, float(z)) - float(tiley) - 1.0)
+            infofile.write('{}/{}/{}.{}\n'.format(z, x, y, image_format))
             check_dir('{}{}/{}'.format(outdirpath, z, x))
-            outfilename = ('{}{}/{}/{}.{}'.format(outdirpath, z, x, y, tformat))
-            print(outfilename)
+            outfilename = ('{}{}/{}/{}.{}'.format(outdirpath, z, x, y, image_format))
+            #print(outfilename)
             with open(outfilename, 'wb') as outfile:
                 outfile.write(row[3])
     
