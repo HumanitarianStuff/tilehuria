@@ -13,7 +13,7 @@ examples:
 
 python3 create_tile_list.py /path/to/myPolygon.geojson
 
-or, if the default zoom levels are not appropriate:
+or, if the default zoom levels are not what you want:
 
 python3 create_tile_list.py /path/to/myPolygon.geojson -minz 15 -maxz 21
 
@@ -49,7 +49,7 @@ def get_ogr_driver(extension):
 def lat_long_zoom_to_pixel_coords(lat, lon, zoom):
     """Create pixel coordinates from lat-long point at a given zoom level"""
     sinLat = math.sin(lat * math.pi/180.0)
-    x = int(math.floor(((lon + 180) / 360) * 256 * math.pow(2,zoom)))
+    x = int(math.floor(((lon + 180) / 360) * 256 * math.pow(2, zoom)))
     y = int(math.floor((0.5 - math.log((1 + sinLat) / (1 - sinLat))
         / (4 * math.pi)) * 256 * math.pow(2,zoom)))
     return(x, y)
