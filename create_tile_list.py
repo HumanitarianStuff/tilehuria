@@ -5,9 +5,9 @@ Arguments (using bash-style flags):
 
 infile: An input file as GeoJSON, shp, KML, or gpkg, containing exactly one polygon.
 
--minz, --minzoom",Minimum tile level desired
--maxz, --maxzoom",Maximum tile level desired
--ts, --tileserver",A tile server where the needed tiles can be downloaded: digital_globe_standard digital_globe_premium, bing, etc
+-minz, --minzoom": Minimum tile level desired
+-maxz, --maxzoom": Maximum tile level desired
+-ts, --tileserver": A tile server where the needed tiles can be downloaded: digital_globe_standard digital_globe_premium, bing, etc
 
 examples:
 

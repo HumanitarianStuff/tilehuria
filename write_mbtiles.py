@@ -83,15 +83,18 @@ def main(indir):
             minz = z if int(z) < int(minz) else minz  # As above for min zoom
             (left, bottom, right, top) = increment_bounds(z, x, tiley,
                                                           left, bottom, right, top)
+            centerlon = float(right) - float(left)
+            centerlat = float(top) - float(bottom)
     
     cursor.execute('CREATE TABLE metadata (name TEXT, value TEXT);')
-    #TODO: use args for this and add a few more items such as Atribution and Center
     tilesetmetadata = [('name', basename),
                        ('type', 'overlay'),
                        ('description', 'An MBTile set'),
+                       ('attribution', 'Somebody made it'),
                        ('version', '1.0'),
                        ('format', image_file_type),
-                       ('bounds', '{} {} {} {}'.format(left, bottom, right, top)),
+                       ('bounds', '{},{},{},{}'.format(left, bottom, right, top)),
+                       ('center', '{},{}'.format(centerlon, centerlat)), 
                        ('minzoom', minz),
                        ('maxzoom', maxz)]
     cursor.executemany(
@@ -102,6 +105,15 @@ def main(indir):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("input_dir", help = "Input directory of tile files")
+    parser.add_argument("-f", "--format", help = "Output tile file format: png, "
+                        "jpeg, or jpeg")
+    parser.add_argument("-cs", "--colorspace", help = "Color space of tile format: "
+                        "RGB or YCBCR.")
+    parser.add_argument("-t", "--type", help = "Layer type: overlay or baselayer.")
+    parser.add_argument("-d", "--description", help = "Describe it however you like!")
+    parser.add_argument("-a", "--attribution", help = "Should state data origin.")
+    parser.add_argument("-v", "--version", help = "The version number of the tileset "
+                        "(the actual data, not the program)")
     args = parser.parse_args()
     
     input_dir = args.input_dir  
