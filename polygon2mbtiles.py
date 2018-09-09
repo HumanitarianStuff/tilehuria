@@ -31,6 +31,7 @@ import argparse
 import create_tile_list
 import download_all_tiles_in_csv
 import write_mbtiles
+import convert_and_compress_tiles
 
 def main(infile, opts):
     """Take an Area of Interest (AOI) polygon, return an MBtiles file.""" 
@@ -38,9 +39,15 @@ def main(infile, opts):
     csvfile = '{}_{}.csv'.format(basename, opts['tileserver'])
     foldername = '{}_{}'.format(basename, opts['tileserver'])
 
+    print('\nCreating the CSV list of tiles to {}\n'.format(csvfile))
     create_tile_list.main(infile,
                           opts['minzoom'], opts['maxzoom'], opts['tileserver'])
+    print('Downloading the tiles into {}\n'.format(foldername))
     download_all_tiles_in_csv.main(csvfile)
+    print('Converting all tiles to JPEG format to save space.')
+    convert_and_compress_tiles.main(foldername)
+    print('Writing the actual MBTiles file {}{}'.format(foldername, '.mbtiles'))
+    
     write_mbtiles.main(foldername)
     
 if __name__ == "__main__":
@@ -61,9 +68,11 @@ if __name__ == "__main__":
     parser.add_argument("-a", "--attribution", help = "Should state data origin.")
     parser.add_argument("-ver", "--version", help = "The version number of the"
                         "tileset (the actual data, not the program)")
-    parser.add_argument("-v", "--verbose", help = "Use if you want to see a lot of "
+    parser.add_argument("-v", "--verbose", action = 'store_true',
+                        help = "Use if you want to see a lot of "
                         "command line output flash by!")
-    parser.add_argument("-c", "--clean", help = "Delete intermediate files.")
+    parser.add_argument("-c", "--clean", action = 'store_true',
+                        help = "Delete intermediate files.")
     parser.add_argument("-q", "--quality", help = "JPEG compression quality setting.")
 
 

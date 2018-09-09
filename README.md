@@ -27,12 +27,12 @@ On UNIX (MacOS or Linux), using the command line is fairly straightforward. On W
 ## Automated Script
 This toolkit is built of a number of small utilities, each doing a single part of the job (as per the venerable [UNIX Philosophy](https://en.wikipedia.org/wiki/Unix_philosophy). One program creates a list of tiles from the Area of Interest, another downloads them into a set of folders, another changes the file format and compression settings, one creates a standalone MBTiles file, and a final one reads and opens an MBTile file (to check if it's working as expected and to allow various off-label uses of MBTiles from other sources). This means anyone can use any part of this toolkit for whatever they want to, and if they don't like one bit they can use something else (also, they can probably use bits of it for stuff we never thought of, which is fine as long as they don't do unethical stuff that risks our community's access to imagery for the free map of the world)! 
 
-We've built a simple script to glue all of the pieces together, as most users will probably just want to draw an AOI and create an MBTile file. That script is called ```make_mbtiles_from_aoi.py```.
+We've built a simple script to glue all of the pieces together, as most users will probably just want to draw an AOI and create an MBTile file. That script is called ```polygon2mbtiles.py```.
 
 ### Calling (Running) the Automated Script:
 The script (program) is called from the command line using Python3, like this:
 
-```python3 make_mbtiles_from_aoi.py```
+```python3 polygon2mbtiles.py```
 
 That won't actually do anything, because the program requires *arguments* (data to work on). Most obviously, it requires an input file telling it what area to cover with the MBTile set. Other arguments include settings like min and max zoom, which tileserver to use, and so forth.
 
@@ -42,10 +42,13 @@ infile: An input file as GeoJSON, shp, KML, or gpkg, containing exactly one poly
 
 - -minz or --minzoom": Minimum tile level desired. Integer, defaults to 16
 - -maxz or --maxzoom": Maximum tile level desired. Integer, defaults to 20
-- -ts or --tileserver": A tile server where the needed tiles can be downloaded. Examples: digital_globe_standard, digital_globe_premium, bing (later versions will allow user to configure arbitrary tile servers). Defaults to digital_globe_standard.
-- -f or --format: Actual tiles can be changed from one file format to another, for example PNG to JPEG (useful for reducing file size). PNG or JPEG. 
-- -cs or --colorspace: JPEG files (but not PNG files) can be encoded either using RGB or YCbCr; the latter can be used for more aggressive compression with relatively little perceptible quality loss with most aerial imagery. RGB or YCBCR.
+- -ts or --tileserver": A tile server where the needed tiles can be downloaded. Examples: ```digital_globe_standard```, ```digital_globe_premium```, ```bing``` (later versions will allow user to configure arbitrary tile servers). Defaults to digital_globe_standard.
+- -f or --format: Actual tiles can be changed from one file format to another, for example PNG to JPEG (useful for reducing file size). ```PNG``` or ```JPEG```. 
+- -cs or --colorspace: JPEG files (but not PNG files) can be encoded either using RGB or YCbCr; the latter can be used for more aggressive compression with relatively little perceptible quality loss with most aerial imagery. ```RGB``` or ```YCBCR```.
 - -q or --quality: JPEG compression quality setting, just as in any image processing software. Number from 1 to 100, defaults to 75. 
+- -t or --type: some programs that display MBTiles want to know whether the data is intended as a baselayer or an overlay (to help decide what to put on top of what). ```baselayer``` or ```overlay```.
+- -c or --clean: Delete intermediate files (the tools generate several files the end user does not need, as well as a folder full of tiles, which will take up as much space as the MBTile set! If you set this flag, all of those will be removed when the script is finished.
+- -ver or --verbose: you will see lots of cryptic information going by as the script works. Useful if something has gone wrong and you're trying to figure out the problem.
 
 ### Example Use:
 
@@ -56,15 +59,15 @@ Use QGIS or another GIS program to create a single polygon. Use any shape you li
 
 Create an mbtile set from a GeoJSON polygon with all default settings:
 
-```python3 make_mbtiles_from_aoi.py /path/to/myPolygon.geojson```
+```python3 polygon2mbtiles.py /path/to/myPolygon.geojson```
 
 Create an mbtile set with minimum zoom 12 and max 20, using Bing imagery:
 
-```python3 make_mbtiles_from_aoi.py mypolygon.geojson -minz 12 -maxz 20 -ts bing```
+```python3 polygon2mbtiles.py mypolygon.geojson -minz 12 -maxz 20 -ts bing```
 
 Create an mbtile set with zoom and tileserver selected, verbose mode (so you'll see a lot of information flash by), clean mode (so all intermediate files are deleted), conversion from PNG format to JPEG with YCbCr colorspace and 70% quality setting, attributed to Digital Globe and versioned 1.1:
 
-```python3 make_mbtiles_from_aoi.py mypolygon.geojson -minz 12 -maxz 20 -ts digital_globe_premium -c -v -f JPEG -q 70 -cs YCBCR -a "Digital Globe Premium under the terms of use specified by DG for OpenStreetMap" -v 1.1```
+```python3 polygon2mbtiles.py mypolygon.geojson -minz 12 -maxz 20 -ts digital_globe_premium -c -v -f JPEG -q 70 -cs YCBCR -a "Digital Globe Premium under the terms of use specified by DG for OpenStreetMap" -ver 1.1```
 
 # More information
 
@@ -112,6 +115,9 @@ python3 write_mbtiles.py /path/to/myPolygon_digital_globe_standard
 - Investigate YCbCr options more thoroughly (get compression down harder)
 - Create GUI for the glue script
   - Ideally as a QGIS plugin
-- Do something with the .timeout files (try them again at the end of the download script? Create another script to try to get them later?)
+- Do something with the .timeout files
+  - Try them again at the end of the download script? 
+  - Create another script to try to get them later?
+  - At least make a CSV of them (maybe replace the original CSV with one containing only the timed-out MBTiles?)
 - Create web-based workflow to spin up a cloud server that does the CSV creation, downloading, type conversion/compression, and spits out a highest-zoom-level-only MBTile set for download (should reduce the amount of bandwidth required for DG tilesets by something like 5x
 - Figure out what to do about areas where there are some high-zoom tiles and not others (currently I think this may break the MBTile set if there are, for example, a few tiles at zoom 19 but other areas with only 18).
