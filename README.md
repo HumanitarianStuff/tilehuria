@@ -2,10 +2,10 @@
 
 This is a set of minimal utilities to download imagery and create MBtiles for basemaps on mobile devices or for digitization with low Internet bandwidth. Intended for use by contributors to OpenStreetMap.
 
-This might not be for everyone: there are tools like [tilemill](http://tilemill-project.github.io/tilemill/) and [SAS Planet](http://www.sasgis.org/sasplaneta/) that make MBTiles, and probably work better for most users. We were having trouble getting exactly what we wanted with those tools, so we built our own. This is mostly for people like[us](https://www.hotosm.org/), who run OpenStreetMap projects like [Ramani Huria](http://ramanihuria.org/), often in Africa or other low-connectivity areas, and are willing to take on some technical knowledge and tasks in order to get around the limitations of the environment.
+This might not be for everyone: there are tools like [tilemill](http://tilemill-project.github.io/tilemill/) and [SAS Planet](http://www.sasgis.org/sasplaneta/) that make MBTiles, and probably work better for most users. We were having trouble getting exactly what we wanted with those tools, so we built our own. This is mostly for people like [us](https://www.hotosm.org/), who run OpenStreetMap projects like [Ramani Huria](http://ramanihuria.org/), often in Africa or other low-connectivity areas, and are willing to take on some technical knowledge and tasks in order to get around the limitations of the environment.
 
 # Appropriate Use (Do's and Don'ts)
-Users **_should always_** respect the terms of use of the imagery providers such as Bing (Microsoft) and Digital Globe, who have gone out of their way to allow contributors to OpenStreetMap to use their imagery to build the free map of the world.
+Users **_should always_** respect the terms of use of the imagery providers such as Bing (Microsoft) and Digital Globe, who have gone out of their way to allow contributors to OpenStreetMap to use their imagery to build [the free map of the world](https://www.openstreetmap.org).
 
 The intended use of this toolset is to allow people in low-connectivity environments to make use of the imagery for effective mapping. It was developed in Dar es Salaam by the Humanitarian OpenStreetMap Team/Ramani Huria in order to allow Tanzanian students to work effectively in large numbers with marginal Internet connections (digitizers and field mappers are no longer stuck waiting for Internet, and can map to their full potential). 
 

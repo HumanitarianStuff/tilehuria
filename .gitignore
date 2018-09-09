@@ -1,3 +1,2 @@
 URL_formats.txt
-local_data/
-api_keys/
+__pycache__/

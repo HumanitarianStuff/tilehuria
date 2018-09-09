@@ -61,6 +61,7 @@ def main(indir):
     minz = 23  # As above but decrementing
     # Set initial bounds at opposite sides of their global extents
     (left, bottom, right, top) = (180.0, 85.05113, -180.0, -85.05113)
+    (centerlon, centerlat) = ('','')
     for image_file in image_files:
         (image_filename, image_ext) = os.path.splitext(image_file)
         # Don't add the file to the tileset if it's not an image

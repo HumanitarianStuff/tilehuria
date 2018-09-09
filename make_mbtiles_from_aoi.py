@@ -28,15 +28,20 @@ python3 make_mbtiles_from_aoi.py mypolygon.geojson -minz 12 -maxz 20 -ts digital
 # Ivan Buendia Gayton, Humanitarian OpenStreetMap Team/Ramani Huria, 2018
 import sys, os
 import argparse
+import create_tile_list
+import download_all_tiles_in_csv
+import write_mbtiles
 
-def main(indir):
+def main(infile, opts):
     """Take an Area of Interest (AOI) polygon, return an MBtiles file.""" 
-    basename = indir
-    outfile = indir + '.mbtiles'
-    if os.path.exists(outfile):
-        os.remove(outfile)
+    (basename, extension) = os.path.splitext(infile)
+    csvfile = '{}_{}.csv'.format(basename, opts['tileserver'])
+    foldername = '{}_{}'.format(basename, opts['tileserver'])
 
-    
+    create_tile_list.main(infile,
+                          opts['minzoom'], opts['maxzoom'], opts['tileserver'])
+    download_all_tiles_in_csv.main(csvfile)
+    write_mbtiles.main(foldername)
     
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -54,15 +59,22 @@ if __name__ == "__main__":
     parser.add_argument("-t", "--type", help = "Layer type: overlay or baselayer.")
     parser.add_argument("-d", "--description", help = "Describe it however you like!")
     parser.add_argument("-a", "--attribution", help = "Should state data origin.")
-    parser.add_argument("-ver", "--version", help = "The version number of the tileset "
-                        "(the actual data, not the program)")
-    parser.add_argument("-v", "verbose", help = "Use if you want to see a lot of "
+    parser.add_argument("-ver", "--version", help = "The version number of the"
+                        "tileset (the actual data, not the program)")
+    parser.add_argument("-v", "--verbose", help = "Use if you want to see a lot of "
                         "command line output flash by!")
     parser.add_argument("-c", "--clean", help = "Delete intermediate files.")
-    parser.add_argument("-q", "--quality" help = "JPEG compression quality setting.")
+    parser.add_argument("-q", "--quality", help = "JPEG compression quality setting.")
 
-    args = parser.parse_args()
+
+    defaults = {'minzoom': 16, 'maxzoom': 20, 'tileserver': 'digital_globe_standard'}
+    opts = vars(parser.parse_args())
+
+    opts['minzoom'] = 16 if opts['minzoom'] == None else opts['minzoom']
+    opts['maxzoom'] = 20 if opts['maxzoom'] == None else opts['maxzoom']
+    opts['tileserver'] = ('digital_globe_standard' if opts['tileserver'] == None
+                          else opts['tileserver'])
+
+    input_file = opts['infile']
     
-    input_dir = args.input_dir  
-    
-    main(input_dir)
+    main(input_file, opts)
