@@ -121,3 +121,4 @@ python3 write_mbtiles.py /path/to/myPolygon_digital_globe_standard
   - At least make a CSV of them (maybe replace the original CSV with one containing only the timed-out MBTiles?)
 - Create web-based workflow to spin up a cloud server that does the CSV creation, downloading, type conversion/compression, and spits out a highest-zoom-level-only MBTile set for download (should reduce the amount of bandwidth required for DG tilesets by something like 5x
 - Figure out what to do about areas where there are some high-zoom tiles and not others (currently I think this may break the MBTile set if there are, for example, a few tiles at zoom 19 but other areas with only 18).
+- Create error message for fuckup with polygon in GDAL part of things

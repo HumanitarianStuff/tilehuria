@@ -2,7 +2,7 @@
 """Download necessary tiles for creation of an MBTile dataset.
 
 Arguments:
-    [1] A CSV file or URL created by create_csv.py containing tile URLs
+    A CSV file containing tile URLs
 
 Usage:
     
@@ -28,9 +28,19 @@ def parse_url_for_imtype(url):
     imtype = 'png'
     if('.jpeg' in url or '.jpg' in url):
         imtype = 'jpeg'
-    if('google' in url):
-        imtype = 'jpeg'
+    if('google' in url):  # Yes, a crude and brittle hack
+        imtype = 'jpeg' 
     return imtype
+
+def retry_timeouts(dirpath):
+    """Retry all of the tiles that timed out the first time"""
+    filelist = []
+    for path, dirs, files in os.walk(dir):
+        for f in files:
+            (infilename, extension) = os.path.splitext(infile)
+            if extension == '.timeout':
+                filelist.append(os.path.join(path, f))
+    
 
 def managechunk(chunk, outdirpath):
     """Downloads all tiles contained in a chunk (sub-list of tile rows)"""
@@ -64,7 +74,7 @@ def task(inlist, num_threads, outdirpath):
     # Break the list into chunks of approximately equal size
     chunks = [inlist[i::num_threads] for i in range(num_threads)]
 
-    # Create Tilestash-type folder structure (before tasking for thread safety)
+    # Create Slippy Map-type folder structure (before tasking for thread safety)
     for line in inlist:
         row = line[0].split(';')
         (z, x) = (str(row[3]), str(row[1]), )
