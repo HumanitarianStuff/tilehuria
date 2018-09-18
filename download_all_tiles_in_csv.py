@@ -32,15 +32,22 @@ def parse_url_for_imtype(url):
         imtype = 'jpeg' 
     return imtype
 
-def retry_timeouts(dirpath):
-    """Retry all of the tiles that timed out the first time"""
-    filelist = []
-    for path, dirs, files in os.walk(dir):
+def get_list_of_timeouts(dirpath):
+    """Create a list of URLs of all of tiles that timed out the first time"""
+    urllist = []
+    for path, dirs, files in os.walk(dirpath):
         for f in files:
-            (infilename, extension) = os.path.splitext(infile)
+            (infilename, extension) = os.path.splitext(f)
             if extension == '.timeout':
-                filelist.append(os.path.join(path, f))
-    
+                url = None
+                try:
+                    infile = os.path.join(path, f)
+                    urlfile = open(infile)
+                    url = urlfile.read()
+                except:
+                    print('{} did not work'.format(urlfile))
+                urllist.append(url)
+    return urllist
 
 def managechunk(chunk, outdirpath):
     """Downloads all tiles contained in a chunk (sub-list of tile rows)"""
@@ -108,6 +115,10 @@ def main(infile):
 
     end = time.time() - start
     print('Finished. Downloading took {} seconds'.format(end))
+    tile_timeouts = get_list_of_timeouts(outdirpath)
+    print('{} tiles failed to download due to timeout. Trying again.'
+          .format(len(tile_timeouts)))
+    #TODO create list with zxy and URL, calculate threads to use, task it.
 
 if __name__ == "__main__":
 
