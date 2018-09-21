@@ -60,7 +60,7 @@ def managechunk(chunk, outdirpath):
         
         rawdata = None
         try:
-            rawdata = urllib.request.urlopen(url, timeout=10).read()
+            rawdata = urllib.request.urlopen(url, timeout=200).read()
         except:
             # Download failed. Create a text file called {y}.timeout containing URL
             outfilename = ('{}/{}/{}/{}.{}'.format(outdirpath, z, x, y, 'timeout'))
