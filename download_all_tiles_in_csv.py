@@ -1,4 +1,4 @@
-#!/bin/python
+#!/usr/bin/python3
 """Download necessary tiles for creation of an MBTile dataset.
 
 Arguments:
@@ -58,23 +58,29 @@ def managechunk(chunk, outdirpath):
         url = (row[4])
         (z, x, y) = (str(row[3]), str(row[1]), str(row[2]))
         
+        timeoutfile = ('{}/{}/{}/{}.{}'.format(outdirpath, z, x, y, 'timeout'))
         rawdata = None
         try:
             rawdata = urllib.request.urlopen(url, timeout=200).read()
         except:
-            # Download failed. Create a text file called {y}.timeout containing URL
-            outfilename = ('{}/{}/{}/{}.{}'.format(outdirpath, z, x, y, 'timeout'))
-            with open(outfilename, 'w') as outfile:
-                outfile.write(url)
+            # Download failed. Create a file called {y}.timeout
+            
+            with open(timeoutfile, 'w') as outfile:
+                writer = csv.writer(outfile, delimiter = ';')
+                writer.writerow([row[0], x, y, z, url])
                 
         if(rawdata):
             imtype = parse_url_for_imtype(url)
+            if os.path.exists(timeoutfile):
+                os.remove(timeoutfile)
             outfilename = ('{}/{}/{}/{}.{}'.format(outdirpath, z, x, y, imtype))
             
-            # if the file is less than 1040 bytes, there's no tile here. Save nothing.
+            # if the file is less than 1040 bytes, there's no tile here.
+            # Don't save anything.
             if(len(rawdata) > 1040):
                 with open(outfilename, 'wb') as outfile:
                     outfile.write(rawdata)
+            
 
 def task(inlist, num_threads, outdirpath):
     header_row = inlist.pop(0)
@@ -115,10 +121,25 @@ def main(infile):
 
     end = time.time() - start
     print('Finished. Downloading took {} seconds'.format(end))
+
+    # Check number of timeouts
     tile_timeouts = get_list_of_timeouts(outdirpath)
-    print('{} tiles failed to download due to timeout. Trying again.'
-          .format(len(tile_timeouts)))
-    #TODO create list with zxy and URL, calculate threads to use, task it.
+    if len(tile_timeouts):
+        print('{} tiles failed to download due to timeout'
+              .format(len(tile_timeouts)))
+        
+        print('Trying timed-out tiles again, with half the number of threads')
+        threads_to_use = 25
+        if(len(tile_rows)) < 100:
+            threads_to_use = int(len(tile_rows)/4)
+        task(tile_rows, threads_to_use, outdirpath)
+    
+        tile_timeouts = get_list_of_timeouts(outdirpath)
+        print('{} tiles failed to download a second time due to timeout'
+              .format(len(tile_timeouts)))
+        print(tile_timeouts)
+    
+    
 
 if __name__ == "__main__":
 

@@ -1,4 +1,4 @@
-#!/bin/python3
+#!/usr/bin/python3
 """Create a CSV document containing a list of URLs of tiles from a Tile Map Service (TMS or tileserver).
 
 Arguments (using bash-style flags):
@@ -121,34 +121,39 @@ def tile_coords_and_zoom_to_quadKey(x, y, zoom):
 def main(infile, minzoom, maxzoom, tileserver):
     """Read a polygon file and create a set of output files to create tiles"""
     (infilename, extension) = os.path.splitext(infile)
-    driver = get_ogr_driver(extension)
-    datasource = driver.Open(infile, 0)
-    layer = datasource.GetLayer()
-    layer_defn = layer.GetLayerDefn()
-    extent = layer.GetExtent()
-    (xmin, xmax, ymin, ymax) = (extent[0], extent[1], extent[2], extent[3])
-    geomcollection = ogr.Geometry(ogr.wkbGeometryCollection)
-    for feature in layer:
-        geomcollection.AddGeometry(feature.GetGeometryRef())
-
+    try:
+        driver = get_ogr_driver(extension)
+        datasource = driver.Open(infile, 0)
+        layer = datasource.GetLayer()
+        layer_defn = layer.GetLayerDefn()
+        extent = layer.GetExtent()
+        (xmin, xmax, ymin, ymax) = (extent[0], extent[1], extent[2], extent[3])
+        geomcollection = ogr.Geometry(ogr.wkbGeometryCollection)
+        for feature in layer:
+            geomcollection.AddGeometry(feature.GetGeometryRef())
+    except:
+        print('Something went wrong with the ogr driver')
+        
     # Create the main output file which will contain the URL list
-    #TODO use the CSV library for this instead of just writing strings
     outfile = infilename + '_' + tileserver + '.csv'
     if os.path.exists(outfile):
         os.remove(outfile)
     output_csv = open(outfile, 'w')
     writer = csv.writer(output_csv, delimiter = ';')
     writer.writerow(['wkt','Tilex','TileY','TileZ','URL'])
-#    output_csv.write('wkt;TileX;TileY;TileZ;URL\n')
 
     # Create a new geographical file of the same type as the input file
     # which will contain polygon outlines of all tiles
     outputGridfile = infilename + '_tile_perimeters' + extension    
     if os.path.exists(outputGridfile):
         os.remove(outputGridfile)
-    outDataSource = driver.CreateDataSource(outputGridfile)
-    outLayer = outDataSource.CreateLayer(outputGridfile,geom_type=ogr.wkbPolygon)
-    featureDefn = outLayer.GetLayerDefn()
+    try:
+        outDataSource = driver.CreateDataSource(outputGridfile)
+        outLayer = outDataSource.CreateLayer(outputGridfile,
+                                             geom_type=ogr.wkbPolygon)
+        featureDefn = outLayer.GetLayerDefn()
+    except:
+        print('Did not manage to create {}'.format(outputGridfile))
 
     for zoom in range(int(minzoom), int(maxzoom)+1):
         TileX_field = ogr.FieldDefn('TileX',ogr.OFTInteger)
@@ -247,7 +252,8 @@ if __name__ == "__main__":
     parser.add_argument("-minz", "--minzoom", help = "Minimum tile level desired")
     parser.add_argument("-maxz", "--maxzoom", help = "Maximum tile level desired")
     parser.add_argument("-ts", "--tileserver", help = "A tile server where the"
-                        "needed tiles can be downloaded: digital_globe_standard, "
+                        "needed tiles can be downloaded: "
+                        "digital_globe_standard, "
                         "digital_globe_premium, bing, etc")
     
     args = parser.parse_args()
