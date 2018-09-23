@@ -49,7 +49,7 @@ def get_list_of_timeouts(dirpath):
                 urllist.append(url)
     return urllist
 
-def managechunk(chunk, outdirpath):
+def managechunk(chunk, outdirpath, timeout):
     """Downloads all tiles contained in a chunk (sub-list of tile rows)"""
 
     chunkfailedlines = []
@@ -61,7 +61,7 @@ def managechunk(chunk, outdirpath):
         timeoutfile = ('{}/{}/{}/{}.{}'.format(outdirpath, z, x, y, 'timeout'))
         rawdata = None
         try:
-            rawdata = urllib.request.urlopen(url, timeout=200).read()
+            rawdata = urllib.request.urlopen(url, timeout=int(timeout)).read()
         except:
             # Download failed. Create a file called {y}.timeout
             
@@ -82,7 +82,7 @@ def managechunk(chunk, outdirpath):
                     outfile.write(rawdata)
             
 
-def task(inlist, num_threads, outdirpath):
+def task(inlist, num_threads, outdirpath, timeout):
     header_row = inlist.pop(0)
     # Break the list into chunks of approximately equal size
     chunks = [inlist[i::num_threads] for i in range(num_threads)]
@@ -97,7 +97,8 @@ def task(inlist, num_threads, outdirpath):
 
     #TODO Send off an empty list to each chunk manager to get failed lines back
     for chunk in chunks:
-        thread = threading.Thread(target=managechunk, args=(chunk, outdirpath))
+        thread = threading.Thread(target=managechunk,
+                                  args=(chunk, outdirpath, timeout))
         threads.append(thread)
         thread.start()
 
@@ -117,7 +118,8 @@ def main(infile):
         tile_rows = list(reader)
         if(len(tile_rows)) < 100:
            threads_to_use = int(len(tile_rows)/2)
-        task(tile_rows, threads_to_use, outdirpath)
+        print('Starting download of {} tiles'.format(len(tile_rows)))
+        task(tile_rows, threads_to_use, outdirpath, 10)
 
     end = time.time() - start
     print('Finished. Downloading took {} seconds'.format(end))
@@ -128,18 +130,19 @@ def main(infile):
         print('{} tiles failed to download due to timeout'
               .format(len(tile_timeouts)))
         
-        print('Trying timed-out tiles again, with half the number of threads')
+        print('Trying timed-out tiles again, with half the number of threads'
+              'and a 100-second timeout')
         threads_to_use = 25
         if(len(tile_rows)) < 100:
             threads_to_use = int(len(tile_rows)/4)
-        task(tile_rows, threads_to_use, outdirpath)
+        task(tile_rows, threads_to_use, outdirpath, 100)
     
         tile_timeouts = get_list_of_timeouts(outdirpath)
         print('{} tiles failed to download a second time due to timeout'
               .format(len(tile_timeouts)))
         print(tile_timeouts)
-    
-    
+    else:
+        print('Looks like all tiles were downloaded on the first try!')
 
 if __name__ == "__main__":
 
