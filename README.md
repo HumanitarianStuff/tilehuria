@@ -24,6 +24,12 @@ It requires using the command line; at this moment there is no Graphical User In
 
 On UNIX (MacOS or Linux), using the command line is fairly straightforward. On Windows, we can't really say (anyone willing to test it let me know; happy to get on a call with you). Basically use involves typing some commands into a terminal window.
 
+## How big an area can you use this with?
+Using zoom level 16-20, you'll encounter something like 1000 tiles per square kilometer. That'll translate to about 25MB of tiles in PNG format, or about 10MB in JPEG format (which is why, if you are using a tileserver that serves PNG files, it's a good idea to use the conversion and compression script here to go from PNG to JPEG before actually creating your MBTile file). 
+
+
+
+
 ## Automated Script
 This toolkit is built of a number of small utilities, each doing a single part of the job (as per the venerable [UNIX Philosophy](https://en.wikipedia.org/wiki/Unix_philosophy). One program creates a list of tiles from the Area of Interest, another downloads them into a set of folders, another changes the file format and compression settings, one creates a standalone MBTiles file, and a final one reads and opens an MBTile file (to check if it's working as expected and to allow various off-label uses of MBTiles from other sources). This means anyone can use any part of this toolkit for whatever they want to, and if they don't like one bit they can use something else (also, they can probably use bits of it for stuff we never thought of, which is fine as long as they don't do unethical stuff that risks our community's access to imagery for the free map of the world)! 
 
