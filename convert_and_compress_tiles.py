@@ -14,7 +14,7 @@ def scandir(dir):
 
 def main(indir):
     image_files = scandir(indir)
-    numfiles = len(image_files))
+    numfiles = len(image_files)
     print('Launching compression of {} image files'.format(numfiles))
     print('We would love to tell you how long this will take, but we cannot')
     for image_file in image_files:
