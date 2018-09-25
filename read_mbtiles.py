@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 
 import sys, os
+import argparse
 import math
 import sqlite3
 from sqlite3 import Error
@@ -16,15 +17,17 @@ def connect(infile):
 
 def check_dir(path):
     if not os.path.exists(path):
-        outdir = os.makedirs(path)
+        os.makedirs(os.path.join(path, ''))
 
-def main(infile):
+def main(opts):
+    infile = opts['infile']
     (infilename, extension) = os.path.splitext(infile)
 
-    outdirpath = '{}_mbtiles/'.format(infilename)
-    if not os.path.exists(outdirpath):
-        outdir = os.makedirs(outdirpath)
-    
+    outdirpath = (os.path.join(opts['output_dir'], '')
+                  if opts['output_dir']
+                  else '{}_mbtiles/'.format(infilename))
+    check_dir(outdirpath)
+
     infofilename = infile + '_info.txt'
     with open(infofilename, 'w') as infofile:
         connection = connect(infile)
@@ -79,7 +82,8 @@ def main(infile):
             y = int(math.pow(2.0, float(z)) - float(tiley) - 1.0)
             infofile.write('{}/{}/{}.{}\n'.format(z, x, y, image_format))
             check_dir('{}{}/{}'.format(outdirpath, z, x))
-            outfilename = ('{}{}/{}/{}.{}'.format(outdirpath, z, x, y, image_format))
+            outfilename = ('{}{}/{}/{}.{}'.
+                           format(outdirpath, z, x, y, image_format))
             #print(outfilename)
             with open(outfilename, 'wb') as outfile:
                 outfile.write(row[3])
@@ -88,4 +92,14 @@ def main(infile):
         connection.close()
                 
 if __name__ == '__main__':
-    main(sys.argv[1])
+    p = argparse.ArgumentParser()
+    p.add_argument("infile", help = "An MBTile file to be read.")
+    p.add_argument("-od", "--output_dir",
+                   help = "The directory to store extracted tiles.")
+    p.add_argument("-v", "--verbose", action = 'store_true',
+                        help = "Use if you want to see a lot of "
+                        "command line output flash by!")
+
+    opts = vars(p.parse_args())
+    
+    main(opts)

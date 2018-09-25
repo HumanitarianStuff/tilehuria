@@ -33,75 +33,73 @@ import download_all_tiles_in_csv
 import write_mbtiles
 import convert_and_compress_tiles
 
-def main(infile, opts):
-    """Take an Area of Interest (AOI) polygon, return an MBtiles file.""" 
+def main(opts):
+    """Take an Area of Interest (AOI) polygon, return an MBtiles file."""
+    infile = opts['infile']
     (basename, extension) = os.path.splitext(infile)
     csvfile = '{}_{}.csv'.format(basename, opts['tileserver'])
     foldername = '{}_{}'.format(basename, opts['tileserver'])
 
     print('\nCreating the CSV list of tiles to {}\n'.format(csvfile))
-    create_tile_list.main(infile,
-                          opts['minzoom'], opts['maxzoom'], opts['tileserver'])
+    create_tile_list.main(opts)
     print('Downloading the tiles into {}\n'.format(foldername))
     download_all_tiles_in_csv.main(csvfile)
     print('Converting all tiles to JPEG format to save space.')
     convert_and_compress_tiles.main(foldername)
     print('Writing the actual MBTiles file {}{}'.format(foldername, '.mbtiles'))
-    
-    write_mbtiles.main(foldername)
+
+    opts['tiledir'] = foldername
+    write_mbtiles.main(opts)
     
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser()
-    parser.add_argument("infile", help = "An input file as GeoJSON, shp, KML, "
+    p = argparse.ArgumentParser()
+    p.add_argument("infile", help = "An input file as GeoJSON, shp, KML, "
                         "or gpkg, containing exactly one polygon.")
-    parser.add_argument("-minz", "--minzoom", help = "Minimum tile "
+    p.add_argument("-minz", "--minzoom", help = "Minimum tile "
                         "level desired")
-    parser.add_argument("-maxz", "--maxzoom", help = "Maximum tile "
+    p.add_argument("-maxz", "--maxzoom", help = "Maximum tile "
                         "level desired")
-    parser.add_argument("-ts", "--tileserver", help = "A server where the "
+    p.add_argument("-ts", "--tileserver", help = "A server where the "
                         "tiles can be downloaded: digital_globe_standard, "
                         "digital_globe_premium, bing, etc")
-    parser.add_argument("-f", "--format", help = "Output tile format: PNG, "
+    p.add_argument("-f", "--format", help = "Output tile format: PNG, "
                         "JPEG, or JPG")
-    parser.add_argument("-cs", "--colorspace", help = "Color space of tile "
+    p.add_argument("-cs", "--colorspace", help = "Color space of tile "
                         " format: RGB or YCBCR.")
-    parser.add_argument("-t", "--type", help = "Layer type: "
+    p.add_argument("-t", "--type", help = "Layer type: "
                         "overlay or baselayer.")
-    parser.add_argument("-d", "--description", help = "Describe it however "
+    p.add_argument("-d", "--description", help = "Describe it however "
                         "you like!")
-    parser.add_argument("-a", "--attribution", help = "Should state "
+    p.add_argument("-a", "--attribution", help = "Should state "
                         "data origin.")
-    parser.add_argument("-ver", "--version", help = "The version number of the"
+    p.add_argument("-ver", "--version", help = "The version number of the"
                         "tileset (the actual data, not the program)")
-    parser.add_argument("-v", "--verbose", action = 'store_true',
+    p.add_argument("-v", "--verbose", action = 'store_true',
                         help = "Use if you want to see a lot of "
                         "command line output flash by!")
-    parser.add_argument("-c", "--clean", action = 'store_true',
+    p.add_argument("-c", "--clean", action = 'store_true',
                         help = "Delete intermediate files.")
-    parser.add_argument("-q", "--quality", help = "JPEG compression "
+    p.add_argument("-q", "--quality", help = "JPEG compression "
                         "quality setting.")
 
-
-    defaults = {'minzoom': 16, 'maxzoom': 20,
-                'tileserver': 'digital_globe_standard'}
-    opts = vars(parser.parse_args())
+    opts = vars(p.parse_args())
 
     opts['minzoom'] = 16 if opts['minzoom'] == None else opts['minzoom']
     opts['maxzoom'] = 20 if opts['maxzoom'] == None else opts['maxzoom']
     opts['tileserver'] = ('digital_globe_standard'
                           if opts['tileserver'] == None
                           else opts['tileserver'])
-    opts['format'] = 'JPEG' if opts['format'] == None else opts['format']
-    opts['colorspace'] = 'YCBCR' if opts['format'] == None else opts[
-        'colorspace']
+    opts['format'] = ('JPEG'
+                      if opts['format'] == None else opts['format'])
+    opts['colorspace'] = ('YCBCR'
+                          if opts['format'] == None else opts['colorspace'])
     opts['type'] = 'baselayer' if opts['type'] == None else opts['type']
-    opts['description'] = 'A tileset' if opts['description'] == None else opts[
-        'description']
-    opts['attribution'] = 'Copyright of the tile provider' if opts[
-        'attribution'] == None else opts['attribution']
+    opts['description'] = ('A tileset'
+                           if opts['description'] == None
+                           else opts['description'])
+    opts['attribution'] = ('Copyright of the tile provider'
+                           if opts['attribution'] == None
+                           else opts['attribution'])
     opts['version'] = '1.0' if opts['version'] == None else opts['version']
-
     
-    input_file = opts['infile']
-    
-    main(input_file, opts)
+    main(opts)

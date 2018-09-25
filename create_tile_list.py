@@ -60,14 +60,6 @@ def pixel_coords_to_tile_address(x,y):
     y = int(math.floor(y / 256))
     return (x, y)
 
-def fill_placeholders_in_url(url):
-    """Randomized replacement from a switch statement in curly braces within a URL"""
-    regex = r"\{(.*?)\}"
-    matches = re.finditer(regex, urlf, re.MULTILINE | re.DOTALL)
-    for matchNum, match in enumerate(matches):
-        for groupNum in range(0, len(match.groups())):
-            print(match.group(1))
-
 def tile_coords_zoom_and_tileserver_to_URL(TileX, TileY, zoom, tileserver):
     """Create a URL for a tile based on tile coordinates and zoom"""
     URL = ''
@@ -118,8 +110,12 @@ def tile_coords_and_zoom_to_quadKey(x, y, zoom):
         quadKey += str(digit)
     return quadKey
 
-def main(infile, minzoom, maxzoom, tileserver):
+def main(opts):
     """Read a polygon file and create a set of output files to create tiles"""
+    infile = opts['infile']
+    minzoom = opts['minzoom']
+    maxzoom = opts['maxzoom']
+    tileserver = opts['tileserver']
     (infilename, extension) = os.path.splitext(infile)
     try:
         driver = get_ogr_driver(extension)
@@ -186,7 +182,8 @@ def main(infile, minzoom, maxzoom, tileserver):
                 x = (PixelX / MapSize) - 0.5
                 y = 0.5 - (PixelY / MapSize)
                 lonleft = 360 * x
-                lattop = (90-360 * math.atan(math.exp(-y * 2 * math.pi)) / math.pi)
+                lattop = (90-360 * math.atan(math.exp(-y * 2 * math.pi))
+                          /math.pi)
     
                 # Calculate lat, lon of lower right corner of tile
                 PixelX = (TileX+1) * 256
@@ -195,9 +192,10 @@ def main(infile, minzoom, maxzoom, tileserver):
                 x = (PixelX / MapSize) - 0.5
                 y = 0.5 - (PixelY / MapSize)
                 lonright = 360 * x
-                latbottom = (90 - 360 * math.atan(math.exp(-y * 2 * math.pi))/math.pi)
+                latbottom = (90 - 360 * math.atan(math.exp(-y * 2 * math.pi))
+                             /math.pi)
     
-                # Create a polygon to check if it is in the AOI and, if so, to write
+                # Create a polygon to check if in the AOI, if so, write
                 ring = ogr.Geometry(ogr.wkbLinearRing)
                 ring.AddPoint(lonleft, lattop)
                 ring.AddPoint(lonright, lattop)
@@ -237,7 +235,6 @@ def main(infile, minzoom, maxzoom, tileserver):
     # Close DataSources - without this you'll get a segfault from OGR.
     outDataSource.Destroy()
 
-    # Inform the user of completion and summarize created assets to stdout
     print('\nInput file: '+infile)
     print('Zoom levels: {} to {}'.format(str(minzoom), str(maxzoom)))
     print('Output files:\n{}\n{}\n'
@@ -245,24 +242,25 @@ def main(infile, minzoom, maxzoom, tileserver):
     print()
 
 if __name__ == "__main__":
-    
-    parser = argparse.ArgumentParser()
-    parser.add_argument("infile", help = "An input file as GeoJSON, shp, KML, "
+    p = argparse.ArgumentParser()
+    p.add_argument("infile", help = "An input file as GeoJSON, shp, KML, "
                         "or gpkg, containing exactly one polygon.")
-    parser.add_argument("-minz", "--minzoom", help = "Minimum tile level desired")
-    parser.add_argument("-maxz", "--maxzoom", help = "Maximum tile level desired")
-    parser.add_argument("-ts", "--tileserver", help = "A tile server where the"
-                        "needed tiles can be downloaded: "
-                        "digital_globe_standard, "
+    p.add_argument("-minz", "--minzoom", help = "Minimum tile "
+                        "level desired")
+    p.add_argument("-maxz", "--maxzoom", help = "Maximum tile "
+                        "level desired")
+    p.add_argument("-ts", "--tileserver", help = "A server where the "
+                        "tiles can be downloaded: digital_globe_standard, "
                         "digital_globe_premium, bing, etc")
-    
-    args = parser.parse_args()
-    
-    infile = args.infile
-    minz = args.minzoom if args.minzoom else 16
-    maxz = args.maxzoom if args.maxzoom else 20
-    tileserver = args.tileserver if args.tileserver else 'digital_globe_standard'
+    p.add_argument("-v", "--verbose", action = 'store_true',
+                        help = "Use if you want to see a lot of "
+                        "command line output flash by!")
 
-    print('tileserver is {}'.format(tileserver))
+    opts = vars(p.parse_args())
 
-    main(infile, minz, maxz, tileserver)
+    opts['minzoom'] = 16 if opts['minzoom'] == None else opts['minzoom']
+    opts['maxzoom'] = 20 if opts['maxzoom'] == None else opts['maxzoom']
+    opts['tileserver'] = ('digital_globe_standard'
+                          if opts['tileserver'] == None
+                          else opts['tileserver'])    
+    main(opts)

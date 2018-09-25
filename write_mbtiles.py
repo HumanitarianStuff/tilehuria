@@ -40,8 +40,9 @@ def increment_bounds(zoom, x, y, left, bottom, right, top):
     top = newtop if newtop > top else top
     return(left, bottom, right, top)
 
-def main(indir):
-    """Take a folder of tiles in Slippy Map-style schema, return an MBtiles file.""" 
+def main(opts):
+    """Take a folder of tiles in Slippy Map-style schema, return an MBtiles file."""
+    indir = opts['tiledir']
     basename = indir
     outfile = indir + '.mbtiles'
     if os.path.exists(outfile):
@@ -83,7 +84,8 @@ def main(indir):
             maxz = z if int(z) > int(maxz) else maxz  # Will end at correct max zoom
             minz = z if int(z) < int(minz) else minz  # As above for min zoom
             (left, bottom, right, top) = increment_bounds(z, x, tiley,
-                                                          left, bottom, right, top)
+                                                          left, bottom,
+                                                          right, top)
             centerlon = float(right) - float(left)
             centerlat = float(top) - float(bottom)
     
@@ -104,19 +106,20 @@ def main(indir):
     db.close()
     
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser()
-    parser.add_argument("input_dir", help = "Input directory of tile files")
-    parser.add_argument("-f", "--format", help = "Output tile file format: png, "
-                        "jpeg, or jpeg")
-    parser.add_argument("-cs", "--colorspace", help = "Color space of tile format: "
-                        "RGB or YCBCR.")
-    parser.add_argument("-t", "--type", help = "Layer type: overlay or baselayer.")
-    parser.add_argument("-d", "--description", help = "Describe it however you like!")
-    parser.add_argument("-a", "--attribution", help = "Should state data origin.")
-    parser.add_argument("-v", "--version", help = "The version number of the tileset "
-                        "(the actual data, not the program)")
-    args = parser.parse_args()
+    p = argparse.ArgumentParser()
+    p.add_argument("tiledir", help = "Input directory of tile files")
+    p.add_argument("-f", "--format",
+                   help = "Output tile file format: png, jpeg, or jpeg")
+    p.add_argument("-cs", "--colorspace",
+                   help = "Color space of tile format: RGB or YCBCR.")
+    p.add_argument("-t", "--type", help = "Layer type: overlay or baselayer.")
+    p.add_argument("-d", "--description",
+                   help = "Describe it however you like!")
+    p.add_argument("-a", "--attribution", help = "Should state data origin.")
+    p.add_argument("-v", "--version",
+                   help = "The version number of the tileset "
+                   "(the actual data, not the program)")
     
-    input_dir = args.input_dir  
-    
-    main(input_dir)
+    opts = vars(p.parse_args())
+        
+    main(opts)
