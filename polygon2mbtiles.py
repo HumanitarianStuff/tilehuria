@@ -54,18 +54,23 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("infile", help = "An input file as GeoJSON, shp, KML, "
                         "or gpkg, containing exactly one polygon.")
-    parser.add_argument("-minz", "--minzoom", help = "Minimum tile level desired")
-    parser.add_argument("-maxz", "--maxzoom", help = "Maximum tile level desired")
-    parser.add_argument("-ts", "--tileserver", help = "A tile server where the"
-                        "needed tiles can be downloaded: digital_globe_standard, "
+    parser.add_argument("-minz", "--minzoom", help = "Minimum tile "
+                        "level desired")
+    parser.add_argument("-maxz", "--maxzoom", help = "Maximum tile "
+                        "level desired")
+    parser.add_argument("-ts", "--tileserver", help = "A server where the "
+                        "tiles can be downloaded: digital_globe_standard, "
                         "digital_globe_premium, bing, etc")
-    parser.add_argument("-f", "--format", help = "Output tile file format: PNG, "
-                        "JPEG, or JPEG")
-    parser.add_argument("-cs", "--colorspace", help = "Color space of tile format: "
-                        "RGB or YCBCR.")
-    parser.add_argument("-t", "--type", help = "Layer type: overlay or baselayer.")
-    parser.add_argument("-d", "--description", help = "Describe it however you like!")
-    parser.add_argument("-a", "--attribution", help = "Should state data origin.")
+    parser.add_argument("-f", "--format", help = "Output tile format: PNG, "
+                        "JPEG, or JPG")
+    parser.add_argument("-cs", "--colorspace", help = "Color space of tile "
+                        " format: RGB or YCBCR.")
+    parser.add_argument("-t", "--type", help = "Layer type: "
+                        "overlay or baselayer.")
+    parser.add_argument("-d", "--description", help = "Describe it however "
+                        "you like!")
+    parser.add_argument("-a", "--attribution", help = "Should state "
+                        "data origin.")
     parser.add_argument("-ver", "--version", help = "The version number of the"
                         "tileset (the actual data, not the program)")
     parser.add_argument("-v", "--verbose", action = 'store_true',
@@ -73,17 +78,30 @@ if __name__ == "__main__":
                         "command line output flash by!")
     parser.add_argument("-c", "--clean", action = 'store_true',
                         help = "Delete intermediate files.")
-    parser.add_argument("-q", "--quality", help = "JPEG compression quality setting.")
+    parser.add_argument("-q", "--quality", help = "JPEG compression "
+                        "quality setting.")
 
 
-    defaults = {'minzoom': 16, 'maxzoom': 20, 'tileserver': 'digital_globe_standard'}
+    defaults = {'minzoom': 16, 'maxzoom': 20,
+                'tileserver': 'digital_globe_standard'}
     opts = vars(parser.parse_args())
 
     opts['minzoom'] = 16 if opts['minzoom'] == None else opts['minzoom']
     opts['maxzoom'] = 20 if opts['maxzoom'] == None else opts['maxzoom']
-    opts['tileserver'] = ('digital_globe_standard' if opts['tileserver'] == None
+    opts['tileserver'] = ('digital_globe_standard'
+                          if opts['tileserver'] == None
                           else opts['tileserver'])
+    opts['format'] = 'JPEG' if opts['format'] == None else opts['format']
+    opts['colorspace'] = 'YCBCR' if opts['format'] == None else opts[
+        'colorspace']
+    opts['type'] = 'baselayer' if opts['type'] == None else opts['type']
+    opts['description'] = 'A tileset' if opts['description'] == None else opts[
+        'description']
+    opts['attribution'] = 'Copyright of the tile provider' if opts[
+        'attribution'] == None else opts['attribution']
+    opts['version'] = '1.0' if opts['version'] == None else opts['version']
 
+    
     input_file = opts['infile']
     
     main(input_file, opts)
