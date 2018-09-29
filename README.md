@@ -189,6 +189,21 @@ Drop the MBTile file into QGIS, or load it onto your phone, or open it in JOSM, 
 - Python 3
 - GDAL
 
+#### Setting up on a fresh Ubuntu 18.04 Digital Ocean instance
+```sudo apt install -y python3-pip
+sudo pip3 install pillow
+sudo apt install -y python3-gdal
+git clone https://github.com/ivangayton/tilehuria
+cd tilehuria
+```
+
+#### Testing it
+```python3 polygon2mbtiles example_files 
+python3 polygon2mbtiles.py example_files/San_Francisco_Shipyard.geojson 
+```
+
+That should result in the creation of a tiny MBTile file in the example_files folder (along with a folder full of tile image files and a couple of ancillary files).
+
 **TODO: investigate how to make this work on Windows; probably just ensuring that we can launch using the QGIS python binaries, which already have GDAL.**
 
 # TODO
