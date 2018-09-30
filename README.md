@@ -1,11 +1,13 @@
 # TileHuria
 
-This is a set of minimal utilities to download imagery and create MBtiles for basemaps on mobile devices or for digitization with low Internet bandwidth. Intended for use by contributors to OpenStreetMap.
+*Project name: "Tile" referring to map tiles. "Huria" means "Free" or "Open" in Swahili.*
 
-This might not be for everyone: there are tools like [tilemill](http://tilemill-project.github.io/tilemill/) and [SAS Planet](http://www.sasgis.org/sasplaneta/) that make MBTiles, and probably work better for most users. We were having trouble getting exactly what we wanted with those tools, so we built our own. This is mostly for people like [us](https://www.hotosm.org/), who run OpenStreetMap projects like [Ramani Huria](http://ramanihuria.org/), often in Africa or other low-connectivity areas, and are willing to take on some technical knowledge and tasks in order to get around the limitations of the environment.
+This is a set of minimal utilities to download imagery and create MBtiles for basemaps on mobile devices or for digitization with low Internet bandwidth. Intended for use by contributors to [OpenStreetMap](https://www.openstreetmap.org/) and/or users of [OpenDataKit](http://opendatakit.org/) for humanitarian mapping.
+
+This might not be for everyone: there are tools like [tilemill](http://tilemill-project.github.io/tilemill/) and [SAS Planet](http://www.sasgis.org/sasplaneta/) that make MBTiles, and may work better for many users. We were having trouble getting exactly what we wanted with the available tools, so we built our own. This is mostly for people like [us](https://www.hotosm.org/), who run OpenStreetMap projects like [Ramani Huria](http://ramanihuria.org/), often in Africa or other low-connectivity areas.
 
 # Appropriate Use (Do's and Don'ts)
-Users **_should always_** respect the terms of use of the imagery providers such as Bing (Microsoft) and Digital Globe, who have gone out of their way to allow contributors to OpenStreetMap to use their imagery to build [the free map of the world](https://www.openstreetmap.org).
+Users should **_always_** respect the terms of use of the imagery providers such as Bing (Microsoft) and Digital Globe, who have gone out of their way to allow contributors to OpenStreetMap to use their imagery to build [the free map of the world](https://www.openstreetmap.org).
 
 The intended use of this toolset is to allow people in low-connectivity environments to make use of the imagery for effective mapping. It was developed in Dar es Salaam by the Humanitarian OpenStreetMap Team/Ramani Huria in order to allow Tanzanian students to work effectively in large numbers with marginal Internet connections (digitizers and field mappers are no longer stuck waiting for Internet, and can map to their full potential). 
 
@@ -15,137 +17,92 @@ You may legally and ethically use the tilesets generated with these tools to:
 1. Digitize using [JOSM](https://josm.openstreetmap.de/), even when you have a poor Internet connection, and
 2. Place a background tileset on your mobile device when mapping, even if you are out of mobile service areas. 
 
-Please do not risk our community's access to imagery to build the open map of the world! Respect the terms and conditions of the donors of the imagery we use! Do not use these tools for uses other than contributing to OpenStreetMap! 
+Please do not risk our community's access to imagery to build the open map of the world! Respect the terms and conditions of the donors of the imagery we use! Do not use these tools for uses other than contributing to OpenStreetMap!
 
-# How to Use it
-This toolset is written in Python 3, with one major dependency: [GDAL](https://www.gdal.org/). If you have [QGIS](https://qgis.org/en/site/) (at least version 3.0) installed on your computer, you probably have everything you need (QGIS installs both Python and GDAL, and QGIS >3.0 uses Python 3).
+# Setting it Up
+This toolset is written in Python 3, with two dependencies: [GDAL](https://www.gdal.org/) and [pillow (the Python Imaging Library)](https://pillow.readthedocs.io/en/5.2.x/).
 
-It requires using the command line; at this moment there is no Graphical User Interface (GUI) for it. We might get around to building this as a QGIS plugin with a nice GUI, or perhaps a web service of some kind, but we don't have much time these days... come to think of it, feel free to go ahead and do that if you have the knowledge and time!
+If you have [QGIS](https://qgis.org/en/site/) (at least version 3.0) installed on your computer, you should already have GDAL. In any case QGIS is useful to create the areas of interest you will need to use this tool, as well as to view the resulting MBTiles.
 
-On UNIX (MacOS or Linux), using the command line is fairly straightforward. On Windows, we can't really say (anyone willing to test it let me know; happy to get on a call with you). Basically use involves typing some commands into a terminal window.
+At the moment TileHuria requires using the command line; there is no Graphical User Interface (GUI) for it. We're working on a mimimal Web service for it.
 
-## How big an area can you use this with?
-Using zoom level 16-20, you'll encounter something like 1000 tiles per square kilometer. That'll translate to about 25MB of tiles in PNG format, or about 10MB in JPEG format (which is why, if you are using a tileserver that serves PNG files, it's a good idea to use the conversion and compression script here to go from PNG to JPEG before actually creating your MBTile file). 
+#### Setting up, in this case on a fresh Ubuntu 18.04 Digital Ocean instance
+```
+sudo apt update
+sudo apt install -y python3-gdal
+sudo apt install -y python3-pip
+sudo pip3 install pillow
+git clone https://github.com/ivangayton/tilehuria
+cd tilehuria
+```
 
+#### Testing it
+```
+python3 polygon2mbtiles.py example_files/San_Francisco_Shipyard.geojson
+```
 
+That should result in the creation of a small MBTile file in the example_files folder (along with a folder full of tile image files and a couple of ancillary files). If that happens, you've got a working setup.
 
+# Example Use:
 
-## Automated Script
-This toolkit is built of a number of small utilities, each doing a single part of the job (as per the venerable [UNIX Philosophy](https://en.wikipedia.org/wiki/Unix_philosophy). One program creates a list of tiles from the Area of Interest, another downloads them into a set of folders, another changes the file format and compression settings, one creates a standalone MBTiles file, and a final one reads and opens an MBTile file (to check if it's working as expected and to allow various off-label uses of MBTiles from other sources). This means anyone can use any part of this toolkit for whatever they want to, and if they don't like one bit they can use something else (also, they can probably use bits of it for stuff we never thought of, which is fine as long as they don't do unethical stuff that risks our community's access to imagery for the free map of the world)! 
+#### First create a polygon for your Area of Interest (AOI)
 
-We've built a simple script to glue all of the pieces together, as most users will probably just want to draw an AOI and create an MBTile file. That script is called ```polygon2mbtiles.py```.
+*More detailed instructions for doing this are just below in the next section!*
 
-### Calling (Running) the Automated Script:
-The script (program) is called from the command line using Python3, like this:
+Use QGIS or another GIS program to create a single polygon. Use any shape you like, but only one polygon please! Make sure that polygon is in the "default" projection, which is EPSG 4326 (if you don't do anything weird, that's likely how it will be saved anyway). Save the polygon in GeoJSON format, and place it on your hard drive in a sensible location. There's a GeoJSON file in the example folder in this repo, callled San_Francisco_Shipyard.geojson, that you can use to test.
 
-```python3 polygon2mbtiles.py```
+There is also a brilliant Web service at [geojson.io](geojson.io) that allows you to create a GeoJSON area of interest quickly and easily. Detailed instructions below.
 
-That won't actually do anything, because the program requires *arguments* (data to work on). Most obviously, it requires an input file telling it what area to cover with the MBTile set. Other arguments include settings like min and max zoom, which tileserver to use, and so forth.
+#### Now launch Tilehuria:
 
-#### Arguments:
-
-infile: An input file as GeoJSON, shp, KML, or gpkg, containing exactly one polygon. This is the only required parameter; all others are optional. The input file can be typed straight into the terminal after the text running the program (see examples below).
-
-- -minz or --minzoom": Minimum tile level desired. Integer, defaults to 16
-- -maxz or --maxzoom": Maximum tile level desired. Integer, defaults to 20
-- -ts or --tileserver": A tile server where the needed tiles can be downloaded. Examples: ```digital_globe_standard```, ```digital_globe_premium```, ```bing``` (later versions will allow user to configure arbitrary tile servers). Defaults to digital_globe_standard.
-- -f or --format: Actual tiles can be changed from one file format to another, for example PNG to JPEG (useful for reducing file size). ```PNG``` or ```JPEG```. 
-- -cs or --colorspace: JPEG files (but not PNG files) can be encoded either using RGB or YCbCr; the latter can be used for more aggressive compression with relatively little perceptible quality loss with most aerial imagery. ```RGB``` or ```YCBCR```.
-- -q or --quality: JPEG compression quality setting, just as in any image processing software. Number from 1 to 100, defaults to 75. 
-- -t or --type: some programs that display MBTiles want to know whether the data is intended as a baselayer or an overlay (to help decide what to put on top of what). ```baselayer``` or ```overlay```.
-- -c or --clean: Delete intermediate files (the tools generate several files the end user does not need, as well as a folder full of tiles, which will take up as much space as the MBTile set! If you set this flag, all of those will be removed when the script is finished.
-- -ver or --verbose: you will see lots of cryptic information going by as the script works. Useful if something has gone wrong and you're trying to figure out the problem.
-
-### Example Use:
-
-#### First create a polygon for you Area of Interest (AOI)
-Use QGIS or another GIS program to create a single polygon. Use any shape you like, but only one polygon please! Save it in GeoJSON format, and place it on your hard drive in a sensible location.
-
-#### Now launch the program in one of the following ways:
-
-Create an mbtile set from a GeoJSON polygon with all default settings:
+To create an mbtile set from a GeoJSON polygon with all default settings:
 
 ```python3 polygon2mbtiles.py /path/to/myPolygon.geojson```
 
-Create an mbtile set with minimum zoom 12 and max 20, using Bing imagery:
+To create an mbtile set with minimum zoom 12 and max 20, using Bing imagery:
 
-```python3 polygon2mbtiles.py mypolygon.geojson -minz 12 -maxz 20 -ts bing```
+```python3 polygon2mbtiles.py /path/to/mypolygon.geojson -minz 12 -maxz 20 -ts bing```
 
 Create an mbtile set with zoom and tileserver selected, verbose mode (so you'll see a lot of information flash by), clean mode (so all intermediate files are deleted), conversion from PNG format to JPEG with YCbCr colorspace and 70% quality setting, attributed to Digital Globe and versioned 1.1:
 
-```python3 polygon2mbtiles.py mypolygon.geojson -minz 12 -maxz 20 -ts digital_globe_premium -c -v -f JPEG -q 70 -cs YCBCR -a "Digital Globe Premium under the terms of use specified by DG for OpenStreetMap" -ver 1.1```
+```python3 polygon2mbtiles.py /path/to/mypolygon.geojson -minz 12 -maxz 19 -ts digital_globe_premium -c -v -f JPEG -q 70 -cs YCBCR -a "Digital Globe Premium under the terms of use specified by DG for OpenStreetMap" -ver 1.1```
 
-# More information
+## Detailed Instructions to create an Area of Interest
 
-## Using the individual scripts
+#### Using [QGIS](https://qgis.org/en/site/)
 
-### Create a CSV file containing URLs for each of the tiles
-Let's say you want to pull the tiles in an area delimited by the file myPolygon.json, and you want tile zoom level 15 to 21 (if you don't specify tile zoom levels, it will default to 16 to 20). Launch the program like so:
+Open [QGIS](https://www.qgis.org/en/site/). I hope you know what area you wish to map! If you don't have any kind of map already, download the [QuickMapServices](http://nextgis.com/blog/quickmapservices/) plugin for QGIS, and load up the OpenStreetMap layer or something similar to help you find the area you need).
 
-```
-python3 create_tile_list.py /path/to/myPolygon.json -minz 15 maxz 21
-```
+Zoom into an area you want an MBTile for. You will need to create a single polygon. In QGIS, go to ```Layer -> Create Layer -> New Temporary Scratch Layer```. Choose ```Polygon / CurvePolygon``` as the geometry type, and give it a name like "MyArea".
 
-You'll see two new files appear next to your AOI polygon: a CSV containing the tile URLs and a new GeoJSON with the tile extents.
-
-The CSV file will have a name composed of the name of the polygon file plus the tileserver chosen. If you have follwed the example verbatim it will be called 'myPolygon_digital_globe_standard.csv'.
-
-### Download all of the tiles
-The tile downloader uses the CSV file generated in the previous step to download the tiles. That's all it needs.
-
-```
-python3 download_all_tiles_in_csv.py /path/to/myPolygon_digital_globe_standard.csv
-```
-
-A folder will appear with same name as the CSV (without the .csv extension of course). This folder will contain one sub-folder for each zoom level, and each zoom level folder will contain a numbered folder (the number actually is the x-address of the tiles within it, therefore corresponds to a particular column of tiles). Within these column folders are actual image files.
-
-The reason for this folder structure is that it corresponds to the [Slippy Map folder and filename structure](https://wiki.openstreetmap.org/wiki/Slippy_map_tilenames), therefore can be served directly by a webserver. You can of course simply turn this folder into an MBTile set, but if you like, you can use it as the base folder for a tileserver to share with multiple people on the same Local Area Network (hint: great for mapathons with poor Internet connections). 
-
-### Turn those tiles into an MBTile set
-The actual mbtile writer doesn't know anything about what has previously transpired; it simply traverses a folder arranged in the TileCache schema and creates an MBTile set from it. 
-```
-python3 write_mbtiles.py /path/to/myPolygon_digital_globe_standard
-```
-# Detailed Instructions for use
-
-## Download the Tile Huria program
-Go onto the Internet and go to to
-
-https://github.com/ivangayton/tilehuria
-
-Find the button on the right which says "Clone or download".
-
-Easiest way is to download the zip file and extract the folder with the program. If you know how to use a terminal (in Mac or Linux), type:
-
-```git clone https://github.com/ivangayton/tilehuria```
-
-## Create an Area of Interest
-
-First, create a new empty folder for your MBTiles.
-
-Open QGIS. I hope you know what area you wish to map! If you don't have any kind of map already, download the [QuickMapServices](link) plugin for QGIS, and load up the OpenStreetMap layer or something similar to help you find the area you need).
-
-Zoom into an area you want an MBTile for. You will need to create a single polygon. In QGIS, go to ```Layer -> Create Layer -> New Temporary Scratch Layer```. Choose ```Polygon / CurvePolygon``` as the geometry type, and give it a name like "MyAOI".
-
-Click on the Add Polygon button ![alt text](https://github.com/adam-p/markdown-here/raw/master/src/common/images/icon48.png "Logo Title Text 1") and trace a polygon. Make sure it doesn't cross over itself or otherwise be an invalid polygon!
-
-Also, don't make one that's too big! More than 1km across and you're asking for trouble; the resulting MBTile file will be way to big and take far too long to download.
+Click on the Add Polygon button and trace a polygon. Make sure it has valid geometry (no lines crossing over themselves, no duplicate nodes, etc). Don't make one that's too big! Using zoom level 16-20, you'll encounter something like 1000 tiles per square kilometer. That'll translate to about 25MB of tiles in PNG format, or about 10MB in JPEG format (which is why, if you are using a tileserver that serves PNG files, it's a good idea to use the conversion and compression script here to go from PNG to JPEG before actually creating your MBTile file). We would not recommend using this for anything more than 100 square km (10 km on a side). Anything larger than that, break it up into multiple areas and create multiple MBTile files. 
 
 Once you are happy with the polygon, save your edits, leave editing mode in QGIS, and right-click on the layer to export it.
 
-Choose ```Export -> Save Features As``` and choose GeoJSON as the file format. Save it in the folder you created for your MBTiles.
+Choose ```Export -> Save Features As``` choose GeoJSON as the file format, and EPSG 4326 as the coordinate system (it should be the default). Save it in the folder you created for your MBTiles.
 
-Minimize QGIS.
+Now you can use this GeoJSON file as input for the polygon2mbtiles.py program (as above in the Example Use section).
 
-## Create a simple MBTile file with all defaults
+#### Using [geojson.io](geojson.io)
 
-Go to the folder where you extracted (or cloned) the Tile Huria program, and type:
+Go to the website, and zoom to the area you want tiles for.
 
-```python3 polygon2mbtiles.py /path/to/myAOI.geojson```
+Use the polygon tool (the pentagon icon) to trace your area of interest (finish it by clicking on the first point).
 
-(Hint: if you don't want to type the path to your AOI file, just drop it into the terminal after typing ```python3 polygon3mbtiles.py ```).
+Click ```save -> GeoJSON``` and put it in a sensible folder with an appropriate filename.
 
-## The Hard Way
+Just as with the file generated using QGIS, you can use this GeoJSON file as input for the polygon2mbtiles.py program (as above in the Example Use section).
+
+## Do it the Hard Way: Use the Individual Scripts
+The polygon2mbtiles.py program doesn't actually do anything by itself, it calls a series of other programs:
+- create_tile_list.py (creates a CSV list of tiles within the area defined by the input GeoJSON file, as well as another GeoJSON file with the perimeters of the tiles)
+- download_all_tiles_in_csv.py (does pretty much exactly what the name says, dumps the tiles into a folder next to the input file)
+- convert_and_compress_tiles.py (stores all of the tile image files in jpeg format to save space; important for people working in areas with poor internet)
+- write_mbtiles.py (grabs all of the tiles in a given folder and saves them into a single MBTiles file.
+
+We built the tools this way so that someone who has another workflow or toolset can use any part of the Tilehuria toolset. If you have a better way of downloading tiles, great! 
+
+Here's how to use the individual scripts:
 
 Starting with the AOI file you created (let's call it myArea.geojson),
 
@@ -162,60 +119,59 @@ If you want to use another tileserver, you can do so by using the -ts  or --tils
 
 or
 
-```python3 create_tile_list.py /path/to/myArea.geojson -ts google;```
+```python3 create_tile_list.py /path/to/myArea.geojson -ts digital_globe_premium;```
 
 #### Download all of the files in the folder
 
 The second script downloads all of the tiles! It's *argument* is the csv file created in the previous step.
 
-```python3 download_all_tiles_in_csv.py myArea_digital_globe_standard.csv```
+```python3 download_all_tiles_in_csv.py /path/to/myArea_digital_globe_standard.csv```
 
-You will now see a folder appear with the same name as the CSV file (minus the .csv extension). If you look inside that folder, you will see a bunch of subfolders (one for each tile zoom level), and inside those a bunch more folders (one for each tile row) and inside those a bunch of pictures (one for each tile in that row)!
+You will now see a folder appear with the same name as the CSV file (minus the .csv extension). If you look inside that folder, you will see a bunch of subfolders (one for each tile zoom level), and inside those a bunch more folders (one for each tile row) and inside those a bunch of pictures (one for each tile in that row)! 
+
+The reason for this folder structure is that it corresponds to the [Slippy Map folder and filename structure](https://wiki.openstreetmap.org/wiki/Slippy_map_tilenames), therefore can be served directly by a webserver. You can of course simply turn this folder into an MBTile set, but if you like, you can use it as the base folder for a tileserver to share with multiple people on the same Local Area Network (hint: great for mapathons with poor Internet connections). 
+
+#### Save space (and download bandwidth if you are doing this on a server rather than a local machine)
+This optional step saves all of the tile image files in a folder in JPEG format. This is three or four times smaller than the PNG format used by some tile providers.
+
+```python3 convert_and_compress_tiles.py /path/to/myArea_digital_globe_standard``` (note that this input is a folder, not a file).
 
 #### Turn the tiles into a single MBTile file
 
 The final script takes the folder full of tiles as it's *argument* and places them all in a single MBTile file.
 
-```python3 write_mbtiles.py myArea_digital_globe_standard```
+```python3 write_mbtiles.py /path/to/myArea_digital_globe_standard``` (again, not that this input is a folder, not a file)
 
 You will now see a new file appear called myArea_digital_globe_standard.mbtiles. Don't try to use it until the program finishes! Watch the terminal, which will tell you when the program is finished.
 
-Drop the MBTile file into QGIS, or load it onto your phone, or open it in JOSM, to enjoy superfast imagery!
+#### Use the MBTiles to make the world a better (or at least better-mapped) place!
 
-**TODO: Add flag/option information here**
+Drop the MBTile file into QGIS, load it onto your phone to use it with [ODK Collect](https://docs.opendatakit.org/collect-offline-maps/), or open it in JOSM, and map quickly and effeciently with fast-loading tiles!
 
-# Dev Info
-## Requirements
-- Python 3
-- GDAL
+# Advanced Information: Full Argument List
 
-#### Setting up on a fresh Ubuntu 18.04 Digital Ocean instance
-```sudo apt install -y python3-pip
-sudo pip3 install pillow
-sudo apt install -y python3-gdal
-git clone https://github.com/ivangayton/tilehuria
-cd tilehuria
-```
+- infile: An input file as GeoJSON in EPSG 4326 Coordinate Reference System, containing exactly one polygon. This is the only required parameter; all others are optional. The input file can be typed straight into the terminal after the text running the program (see examples below).
+- -minz or --minzoom": Minimum tile level desired. Integer, defaults to 16
+- -maxz or --maxzoom": Maximum tile level desired. Integer, defaults to 20
+- -ts or --tileserver": A tile server where the needed tiles can be downloaded. Examples: ```digital_globe_standard```, ```digital_globe_premium```, ```bing``` (later versions will allow user to configure arbitrary tile servers). Defaults to digital_globe_standard (if you don't specify a tileserver, it will use DG Standard, which is fine).
+- -f or --format: Actual tiles can be changed from one file format to another, for example PNG to JPEG (useful for reducing file size). ```PNG``` or ```JPEG```. 
+- -cs or --colorspace: JPEG files (but not PNG files) can be encoded either using RGB or YCbCr; the latter can be used for more aggressive compression with relatively little perceptible quality loss with most aerial imagery. ```RGB``` or ```YCBCR```.
+- -q or --quality: JPEG compression quality setting, just as in any image processing software. Number from 1 to 100, defaults to 75. 
+- -t or --type: some programs that display MBTiles want to know whether the data is intended as a baselayer or an overlay (to help decide what to put on top of what). ```baselayer``` or ```overlay```.
+- -c or --clean: Delete intermediate files (the tools generate several files the end user does not need, as well as a folder full of tiles, which will take up as much space as the MBTile set! If you set this flag, all of those will be removed when the script is finished.
+- -ver or --verbose: you will see lots of cryptic information going by as the script works. Useful if something has gone wrong and you're trying to figure out the problem.
 
-#### Testing it
-```python3 polygon2mbtiles example_files 
-python3 polygon2mbtiles.py example_files/San_Francisco_Shipyard.geojson 
-```
-
-That should result in the creation of a tiny MBTile file in the example_files folder (along with a folder full of tile image files and a couple of ancillary files).
-
-**TODO: investigate how to make this work on Windows; probably just ensuring that we can launch using the QGIS python binaries, which already have GDAL.**
-
-# TODO
-- Complete glue script (it's a stub right now)
-- Investigate YCbCr options more thoroughly (get compression down harder)
-- Create GUI for the glue script
-  - Ideally as a QGIS plugin
-- Do something with the .timeout files
-  - Try them again at the end of the download script? 
-  - Create another script to try to get them later?
-  - At least make a CSV of them (maybe replace the original CSV with one containing only the timed-out MBTiles?)
+# TODO (for developers or contributors)
+- MetaTODO: put this TODO list into the Issues on Github instead of tacked onto the readme
 - Create web-based workflow to spin up a cloud server that does the CSV creation, downloading, type conversion/compression, and spits out a highest-zoom-level-only MBTile set for download (should reduce the amount of bandwidth required for DG tilesets by something like 5x
+- Create desktop GUI
+  - Ideally as a QGIS plugin
+- Create an output file with a list of files that timed out both tries; maybe make a CSV of them (maybe replace the original CSV with one containing only the timed-out MBTiles?)
 - Figure out what to do about areas where there are some high-zoom tiles and not others (currently I think this may break the MBTile set if there are, for example, a few tiles at zoom 19 but other areas with only 18).
 - Create error message for fuckup with polygon in GDAL part of things
-
+- Finish implementing all of the flag options (verbose, clean etc)
+- Investigate how to make it all work locally on Windows
+- Investigate YCbCr options more thoroughly (get compression down harder)
+- Write a couple of tests (start by convertng the file in the example folder and checking that this doesn't throw errors)
+- Write a setup.py script that installs dependencies and installs TileHuria to the local machine (so it can be called directly from anywhere rather than by invoking Python3 and the scripts within the repo folder). 
+  - See [pyxform](https://github.com/XLSForm/pyxform) for an example of how this is done.
