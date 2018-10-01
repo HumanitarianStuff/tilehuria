@@ -168,10 +168,20 @@ Drop the MBTile file into QGIS, load it onto your phone to use it with [ODK Coll
   - Ideally as a QGIS plugin
 - Create an output file with a list of files that timed out both tries; maybe make a CSV of them (maybe replace the original CSV with one containing only the timed-out MBTiles?)
 - Figure out what to do about areas where there are some high-zoom tiles and not others (currently I think this may break the MBTile set if there are, for example, a few tiles at zoom 19 but other areas with only 18).
+- Consider an option to save only tiles from the highest zoom level in any given spot (for people who really need to save download bandwidth and don't mind using GDAL or QGIS locally to create overviews)
+- Consider an option to try to select the "best" tile from all providers for a given spot (a person could just download all tiles from all providers and switch during use, but for the low-bandwidth user it seems useful to provide a single tileset with whatever is best for each individual tile area)
+  - Check all providers for the highest tile level available
+  - Check all providers for the most recent tile (don't know if this is possible; I think there is some timestamp data in the metadata for each URL?)
+  - Use pillow to check for cloudy areas (probably just highest overall RGB pixel value, maybe something more complicated like Hamming distance from an all-white tile, maybe even looking for sections of all white)?
+ 
 - Create error message for fuckup with polygon in GDAL part of things
+- Investigate possibilities for multi-polygons, polygons with holes in them, etc
 - Finish implementing all of the flag options (verbose, clean etc)
-- Investigate how to make it all work locally on Windows
-- Investigate YCbCr options more thoroughly (get compression down harder)
+- Investigate how to make it all work locally on Windows (PyPi should help with this, right?)
+- Investigate YCbCr and JPEG setting options more thoroughly (get compression down harder)
 - Write a couple of tests (start by convertng the file in the example folder and checking that this doesn't throw errors)
-- Write a setup.py script that installs dependencies and installs TileHuria to the local machine (so it can be called directly from anywhere rather than by invoking Python3 and the scripts within the repo folder). 
-  - See [pyxform](https://github.com/XLSForm/pyxform) for an example of how this is done.
+- Set up Continuous Integration (with TravisCI)
+- Publish TileHuria to PyPi so that it can be installed via pip. 
+  - This should handle the dependency installs (pillow and python-gdal), no?
+- Now that it's going to be published and perhaps fairly easy to access, be more careful with the legal/licensing issues:
+  - Maybe hold the commercial tileserver URLs in a local file (with .gitignore to avoid it being published)? Perhaps do what QuickMapServices does and use a "contributed pack" for testing purposes?
