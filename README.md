@@ -2,6 +2,8 @@
 
 *Project name: "Tile" referring to map tiles. "Huria" means "Free" or "Open" in Swahili.*
 
+[![Build Status](https://travis-ci.com/HumanitarianStuff/tilehuria.svg?branch=master)](https://travis-ci.com/HumanitarianStuff/tilehuria)
+
 This is a set of minimal utilities to download imagery and create MBtiles for basemaps on mobile devices or for digitization with low Internet bandwidth. Intended for use by contributors to [OpenStreetMap](https://www.openstreetmap.org/) and/or users of [OpenDataKit](http://opendatakit.org/) for humanitarian mapping.
 
 This might not be for everyone: there are tools like [tilemill](http://tilemill-project.github.io/tilemill/) and [SAS Planet](http://www.sasgis.org/sasplaneta/) that make MBTiles, and may work better for many users. We were having trouble getting exactly what we wanted with the available tools, so we built our own. This is mostly for people like [us](https://www.hotosm.org/), who run OpenStreetMap projects like [Ramani Huria](http://ramanihuria.org/), often in Africa or other low-connectivity areas.
