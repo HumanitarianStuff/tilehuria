@@ -92,7 +92,7 @@ if __name__ == "__main__":
     opts['format'] = ('JPEG'
                       if opts['format'] == None else opts['format'])
     opts['colorspace'] = ('YCBCR'
-                          if opts['format'] == None else opts['colorspace'])
+                          if opts['colorspace'] == None else opts['colorspace'])
     opts['type'] = 'baselayer' if opts['type'] == None else opts['type']
     opts['description'] = ('A tileset'
                            if opts['description'] == None
