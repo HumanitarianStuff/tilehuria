@@ -59,6 +59,7 @@ def managechunk(chunk, outdirpath, timeout):
         (z, x, y) = (str(row[3]), str(row[1]), str(row[2]))
         
         timeoutfile = ('{}/{}/{}/{}.{}'.format(outdirpath, z, x, y, 'timeout'))
+        notilefile = ('{}/{}/{}/{}.{}'.format(outdirpath, z, x, y, 'notile'))
         rawdata = None
         try:
             rawdata = urllib.request.urlopen(url, timeout=int(timeout)).read()
@@ -76,10 +77,14 @@ def managechunk(chunk, outdirpath, timeout):
             outfilename = ('{}/{}/{}/{}.{}'.format(outdirpath, z, x, y, imtype))
             
             # if the file is less than 1040 bytes, there's no tile here.
-            # Don't save anything.
             if(len(rawdata) > 1040):
                 with open(outfilename, 'wb') as outfile:
                     outfile.write(rawdata)
+            else:
+                with open(timeoutfile, 'w') as outfile:
+                    writer = csv.writer(outfile, delimiter = ';')
+                    writer.writerow([row[0], x, y, z, url])
+                
             
 
 def task(inlist, num_threads, outdirpath, timeout):

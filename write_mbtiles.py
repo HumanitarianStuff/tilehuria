@@ -97,7 +97,8 @@ def main(opts):
                        ('version', '1.0'),
                        ('format', image_file_type),
                        ('bounds', '{},{},{},{}'.format(left, bottom, right, top)),
-                       ('center', '{},{}'.format(centerlon, centerlat)), 
+                       # Don't include center as it crashes the Mapbox Android driver
+                       #('center', '{},{}'.format(centerlon, centerlat)), 
                        ('minzoom', minz),
                        ('maxzoom', maxz)]
     cursor.executemany(
@@ -109,7 +110,7 @@ if __name__ == "__main__":
     p = argparse.ArgumentParser()
     p.add_argument("tiledir", help = "Input directory of tile files")
     p.add_argument("-f", "--format",
-                   help = "Output tile file format: png, jpeg, or jpeg")
+                   help = "Output tile file format: png, jpg, or jpeg")
     p.add_argument("-cs", "--colorspace",
                    help = "Color space of tile format: RGB or YCBCR.")
     p.add_argument("-t", "--type", help = "Layer type: overlay or baselayer.")
