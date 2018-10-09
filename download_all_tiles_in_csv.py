@@ -27,9 +27,9 @@ def check_dir(path):
 def parse_url_for_imtype(url):
     imtype = 'png'
     if('.jpeg' in url or '.jpg' in url):
-        imtype = 'jpeg'
+        imtype = 'jpg'
     if('google' in url):  # Yes, a crude and brittle hack
-        imtype = 'jpeg' 
+        imtype = 'jpg' 
     return imtype
 
 def get_list_of_timeouts(dirpath):
