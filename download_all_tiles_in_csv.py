@@ -81,11 +81,9 @@ def managechunk(chunk, outdirpath, timeout):
                 with open(outfilename, 'wb') as outfile:
                     outfile.write(rawdata)
             else:
-                with open(timeoutfile, 'w') as outfile:
+                with open(notilefile, 'w') as outfile:
                     writer = csv.writer(outfile, delimiter = ';')
-                    writer.writerow([row[0], x, y, z, url])
-                
-            
+                    writer.writerow([row[0], x, y, z, url])            
 
 def task(inlist, num_threads, outdirpath, timeout):
     header_row = inlist.pop(0)
