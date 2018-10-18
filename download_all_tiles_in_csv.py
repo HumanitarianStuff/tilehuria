@@ -141,9 +141,15 @@ def main(infile):
         task(tile_rows, threads_to_use, outdirpath, 100)
     
         tile_timeouts = get_list_of_timeouts(outdirpath)
-        print('{} tiles failed to download a second time due to timeout'
-              .format(len(tile_timeouts)))
-        print(tile_timeouts)
+        if len(tile_timeouts):
+           print('{} tiles failed to download a second time due to timeout'
+                 .format(len(tile_timeouts)))
+           print('See timeouts.csv for a list of failed downloads/missing tiles')
+           with open('timeouts.csv', 'w') as to:
+               to.write('wkt;Tilex;TileY;TileZ;URL')
+               for line in tile_timeouts:
+                   to.write(line)
+           
     else:
         print('Looks like all tiles were downloaded on the first try!')
 
@@ -153,6 +159,7 @@ if __name__ == "__main__":
         print("[ ERROR ] you must supply 1 argument: ")
         print("1) a CSV file")
 
+        #TODO: add argparse and opts to make thread number and timeout configurable
         sys.exit(1)
 
     main(sys.argv[1])

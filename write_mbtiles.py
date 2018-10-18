@@ -1,5 +1,5 @@
 #!/usr/bin/python3
-"""Create an MBTile file from a Slippy Map-style folder 
+"""Create a raster MBTile file from a Slippy Map-style folder 
 https://wiki.openstreetmap.org/wiki/Slippy_map_tilenames) 
 in (attempted) compliance with the spec at 
 https://github.com/mapbox/mbtiles-spec/blob/master/1.3/spec.md

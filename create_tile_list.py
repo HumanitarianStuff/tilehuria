@@ -3,7 +3,7 @@
 
 Arguments (using bash-style flags):
 
-infile: An input file as GeoJSON, shp, KML, or gpkg, containing exactly one polygon.
+infile: One or more polygons in GeoJSON format, in unprojected WGS84 (EPSG 4326)
 
 -minz, --minzoom": Minimum tile level desired
 -maxz, --maxzoom": Maximum tile level desired
@@ -31,6 +31,7 @@ import re
 import random
 
 def get_ogr_driver(extension):
+    """Load a driver from GDAL for the input file. Only GeoJSON guaranteed to work."""
     driver = None
     if extension == '.shp':
         driver = ogr.GetDriverByName('ESRI Shapefile')
@@ -42,7 +43,7 @@ def get_ogr_driver(extension):
         driver = ogr.GetDriverByName('GPKG')
     else:
         print('Check input file format for '+infile)
-        print('Supported formats shp, geojson, kml, gpkg (GeoPackage)')
+        print('Only polygon GeoJSON in EPSG 4326 is guaranteed to work.')
         sys.exit()
     return driver
 
@@ -116,12 +117,12 @@ def main(opts):
     minzoom = opts['minzoom']
     maxzoom = opts['maxzoom']
     tileserver = opts['tileserver']
+    
     (infilename, extension) = os.path.splitext(infile)
     try:
         driver = get_ogr_driver(extension)
         datasource = driver.Open(infile, 0)
         layer = datasource.GetLayer()
-        layer_defn = layer.GetLayerDefn()
         extent = layer.GetExtent()
         (xmin, xmax, ymin, ymax) = (extent[0], extent[1], extent[2], extent[3])
         geomcollection = ogr.Geometry(ogr.wkbGeometryCollection)
@@ -195,7 +196,7 @@ def main(opts):
                 latbottom = (90 - 360 * math.atan(math.exp(-y * 2 * math.pi))
                              /math.pi)
     
-                # Create a polygon to check if in the AOI, if so, write
+                # Create a polygon (square) for the tile
                 ring = ogr.Geometry(ogr.wkbLinearRing)
                 ring.AddPoint(lonleft, lattop)
                 ring.AddPoint(lonright, lattop)
@@ -205,10 +206,10 @@ def main(opts):
                 poly = ogr.Geometry(ogr.wkbPolygon)
                 poly.AddGeometry(ring)
     
-                # Check if tile is within the polygon of the Area of Interest.
+                # Check if the tile intersects the polygon of the Area of Interest
                 intersect = geomcollection.Intersect(poly)
                 if intersect == True:
-                    # Tile is in the AOI. Add a row to the CSV for this tile.
+                    # Tile is in AOI. Add a row to the csv and feature to perimeters
                     wkt_outline = '\"{}\"'.format(poly.ExportToWkt())
                     URL = tile_coords_zoom_and_tileserver_to_URL(
                         int(TileX), int(TileY), int(zoom), tileserver)    
