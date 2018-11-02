@@ -209,12 +209,14 @@ def main(opts):
                 # Check if the tile intersects the polygon of the Area of Interest
                 intersect = geomcollection.Intersect(poly)
                 if intersect == True:
-                    # Tile is in AOI. Add a row to the csv and feature to perimeters
+                    # Tile is in AOI. Add a row to the csv
                     wkt_outline = '\"{}\"'.format(poly.ExportToWkt())
                     URL = tile_coords_zoom_and_tileserver_to_URL(
                         int(TileX), int(TileY), int(zoom), tileserver)    
                     writer.writerow([wkt_outline,
                                      str(TileX), str(TileY), str(zoom), URL])
+
+                    # Add the tile outline to the perimeters file
                     outFeature = ogr.Feature(featureDefn)
                     outFeature.SetGeometry(poly)
                     if extension == 'kml':
