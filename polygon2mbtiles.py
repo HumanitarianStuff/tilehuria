@@ -33,27 +33,33 @@ import download_all_tiles_in_csv
 import write_mbtiles
 import convert_and_compress_tiles
 
+def set_defaults(opts):
+    """Set sensible default options for MBTile creation"""
+    opts['minzoom'] = 16 if not opts.get('minzoom') else opts['minzoom']
+    opts['maxzoom'] = 20 if not opts.get('maxzoom') else opts['maxzoom']
+    opts['tileserver'] = ('digital_globe_standard'
+                          if not opts.get('tileserver')
+                          else opts['tileserver'])
+    opts['format'] = ('JPEG'
+                      if not opts.get('format') else opts['format'])
+    opts['colorspace'] = ('YCBCR'
+                          if not opts.get('colorspace') else opts['colorspace'])
+    opts['type'] = 'baselayer' if not opts.get('type') else opts['type']
+    opts['description'] = ('A tileset'
+                           if not opts.get('description')
+                           else opts['description'])
+    opts['attribution'] = ('Copyright of the tile provider'
+                           if not opts.get('attribution')
+                           else opts['attribution'])
+    opts['version'] = '1.0' if not opts.get('version') else opts['version']
+
+    return opts
+
 def main(opts):
     """Take an Area of Interest (AOI) polygon, return an MBtiles file."""
     infile = opts['infile']
-    opts['minzoom'] = 16 if opts['minzoom'] == None else opts['minzoom']
-    opts['maxzoom'] = 20 if opts['maxzoom'] == None else opts['maxzoom']
-    opts['tileserver'] = ('digital_globe_standard'
-                          if opts['tileserver'] == None
-                          else opts['tileserver'])
-    opts['format'] = ('JPEG'
-                      if opts['format'] == None else opts['format'])
-    opts['colorspace'] = ('YCBCR'
-                          if opts['colorspace'] == None else opts['colorspace'])
-    opts['type'] = 'baselayer' if opts['type'] == None else opts['type']
-    opts['description'] = ('A tileset'
-                           if opts['description'] == None
-                           else opts['description'])
-    opts['attribution'] = ('Copyright of the tile provider'
-                           if opts['attribution'] == None
-                           else opts['attribution'])
-    opts['version'] = '1.0' if opts['version'] == None else opts['version']
-
+    opts=set_defaults(opts)
+    
     (basename, extension) = os.path.splitext(infile)
     csvfile = '{}_{}.csv'.format(basename, opts['tileserver'])
     foldername = '{}_{}'.format(basename, opts['tileserver'])
