@@ -36,6 +36,24 @@ import convert_and_compress_tiles
 def main(opts):
     """Take an Area of Interest (AOI) polygon, return an MBtiles file."""
     infile = opts['infile']
+    opts['minzoom'] = 16 if opts['minzoom'] == None else opts['minzoom']
+    opts['maxzoom'] = 20 if opts['maxzoom'] == None else opts['maxzoom']
+    opts['tileserver'] = ('digital_globe_standard'
+                          if opts['tileserver'] == None
+                          else opts['tileserver'])
+    opts['format'] = ('JPEG'
+                      if opts['format'] == None else opts['format'])
+    opts['colorspace'] = ('YCBCR'
+                          if opts['colorspace'] == None else opts['colorspace'])
+    opts['type'] = 'baselayer' if opts['type'] == None else opts['type']
+    opts['description'] = ('A tileset'
+                           if opts['description'] == None
+                           else opts['description'])
+    opts['attribution'] = ('Copyright of the tile provider'
+                           if opts['attribution'] == None
+                           else opts['attribution'])
+    opts['version'] = '1.0' if opts['version'] == None else opts['version']
+
     (basename, extension) = os.path.splitext(infile)
     csvfile = '{}_{}.csv'.format(basename, opts['tileserver'])
     foldername = '{}_{}'.format(basename, opts['tileserver'])
@@ -84,22 +102,4 @@ if __name__ == "__main__":
 
     opts = vars(p.parse_args())
 
-    opts['minzoom'] = 16 if opts['minzoom'] == None else opts['minzoom']
-    opts['maxzoom'] = 20 if opts['maxzoom'] == None else opts['maxzoom']
-    opts['tileserver'] = ('digital_globe_standard'
-                          if opts['tileserver'] == None
-                          else opts['tileserver'])
-    opts['format'] = ('JPEG'
-                      if opts['format'] == None else opts['format'])
-    opts['colorspace'] = ('YCBCR'
-                          if opts['colorspace'] == None else opts['colorspace'])
-    opts['type'] = 'baselayer' if opts['type'] == None else opts['type']
-    opts['description'] = ('A tileset'
-                           if opts['description'] == None
-                           else opts['description'])
-    opts['attribution'] = ('Copyright of the tile provider'
-                           if opts['attribution'] == None
-                           else opts['attribution'])
-    opts['version'] = '1.0' if opts['version'] == None else opts['version']
-    
     main(opts)
