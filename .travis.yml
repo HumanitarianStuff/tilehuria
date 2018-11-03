@@ -1,6 +1,6 @@
 sudo: required
 language: python
-python: 3.5
+python: 2.7
 before_script:
   - sudo apt update
   - sudo apt install -y python3-gdal
