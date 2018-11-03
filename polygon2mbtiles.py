@@ -29,10 +29,10 @@ python3 make_mbtiles_from_aoi.py mypolygon.geojson -minz 12 -maxz 20 -ts digital
 import sys, os
 import argparse
 
-from . import create_tile_list
-from . import download_all_tiles_in_csv
-from . import write_mbtiles
-from . import convert_and_compress_tiles
+import create_tile_list
+import download_all_tiles_in_csv
+import write_mbtiles
+import convert_and_compress_tiles
 
 def set_defaults(opts):
     """Set sensible default options for MBTile creation"""
