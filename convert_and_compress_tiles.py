@@ -12,7 +12,7 @@ def scandir(dir):
             filelist.append(os.path.join(path, f))
     return filelist
 
-def main(indir):
+def convert_and_compress_tiles(indir):
     image_files = scandir(indir)
     numfiles = len(image_files)
     print('Launching compression of {} image files'.format(numfiles))
@@ -35,4 +35,4 @@ if __name__ == "__main__":
     
     input_dir = args.input_dir  
     
-    main(input_dir)
+    convert_and_compress_tiles(input_dir)

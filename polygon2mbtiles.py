@@ -29,84 +29,84 @@ python3 make_mbtiles_from_aoi.py mypolygon.geojson -minz 12 -maxz 20 -ts digital
 import sys, os
 import argparse
 
-import create_tile_list
-import download_all_tiles_in_csv
-import write_mbtiles
-import convert_and_compress_tiles
+from create_tile_list import create_tile_list
+from download_all_tiles_in_csv import download_all_tiles_in_csv
+from convert_and_compress_tiles import convert_and_compress_tiles
+from write_mbtiles import write_mbtiles
 
 def set_defaults(opts):
-    """Set sensible default options for MBTile creation"""
-    opts['minzoom'] = 16 if not opts.get('minzoom') else opts['minzoom']
-    opts['maxzoom'] = 20 if not opts.get('maxzoom') else opts['maxzoom']
-    opts['tileserver'] = ('digital_globe_standard'
-                          if not opts.get('tileserver')
-                          else opts['tileserver'])
-    opts['format'] = ('JPEG'
-                      if not opts.get('format') else opts['format'])
-    opts['colorspace'] = ('YCBCR'
-                          if not opts.get('colorspace') else opts['colorspace'])
-    opts['type'] = 'baselayer' if not opts.get('type') else opts['type']
-    opts['description'] = ('A tileset'
-                           if not opts.get('description')
-                           else opts['description'])
-    opts['attribution'] = ('Copyright of the tile provider'
-                           if not opts.get('attribution')
-                           else opts['attribution'])
-    opts['version'] = '1.0' if not opts.get('version') else opts['version']
-
+    """Set sensible default options for MBTile creation. Does not overwrite 
+       any values passed in, only uses defaults if values are None or absent.
+    """
+    defaults = [
+        ('minzoom', 16),
+        ('maxzoom', 20),
+        ('tileserver', 'digital_globe_standard'),
+        ('format', 'JPEG'),
+        ('colorspace', 'RGB'),
+        ('type', 'baselayer'),
+        ('description', 'A tileset'),
+        ('attribution', 'Copyright of the tile provider'),
+        ('version', 1.0)
+    ]
+    for field, value in defaults:
+        opts[field] = value if not opts.get(field) else opts[field]
     return opts
 
-def main(opts):
+def polygon2mbtiles(opts):
     """Take an Area of Interest (AOI) polygon, return an MBtiles file."""
     infile = opts['infile']
-    opts=set_defaults(opts)
+    opts = set_defaults(opts)
     
     (basename, extension) = os.path.splitext(infile)
     csvfile = '{}_{}.csv'.format(basename, opts['tileserver'])
     foldername = '{}_{}'.format(basename, opts['tileserver'])
 
     print('\nCreating the CSV list of tiles to {}\n'.format(csvfile))
-    create_tile_list.main(opts)
+    create_tile_list(opts)
     print('Downloading the tiles into {}\n'.format(foldername))
-    download_all_tiles_in_csv.main(csvfile)
+    download_all_tiles_in_csv(csvfile)
     print('Converting all tiles to JPEG format to save space.')
-    convert_and_compress_tiles.main(foldername)
+    convert_and_compress_tiles(foldername)
     print('Writing the actual MBTiles file {}{}'.format(foldername, '.mbtiles'))
 
     opts['tiledir'] = foldername
-    write_mbtiles.main(opts)
+    write_mbtiles(opts)
     
 if __name__ == "__main__":
+
+    arguments = [ # shortargument, longargument, helpargument
+        ('-minz', '--minzoom', 'Minimum tile level desired.'),
+        ('-maxz', '--maxzoom', 'Maximum tile level desired.'),
+        ('-ts', '--tileserver', 'A server where the tiles can be downloaded:'
+         ' digital_globe_standard, digital_globe_premium, bing, etc.'),
+        ('-f', '--format', 'Output tile format: PNG, JPEG, or JPG'),
+        ('-cs', '--colorspace', 'Color space of tile format: RGB or YCBCR.'),
+        ('-q', '--quality', 'JPEG compression quality setting.'),
+        ('-t', '--type', 'Layer type: overlay or baselayer.'),
+        ('-d', '--description', 'Describe it however you like!'),
+        ('-a', '--attribution', 'Should state data origin.'),
+        ('-ver', '--version', 'The version number of the tileset (the actual data,'
+         ' not the program)'),
+    ]
+    
+    flags = [ # shortflag, longflag, action, help
+        ('-v', '--verbose', 'store_true', 'Use if you want to see a lot of'
+         ' command line output flash by!'),
+        ('-c', '--clean', 'store_true', 'Delete intermediate files.')
+    ]
+    
     p = argparse.ArgumentParser()
+    
     p.add_argument("infile", help = "An input file as GeoJSON, shp, KML, "
                         "or gpkg, containing exactly one polygon.")
-    p.add_argument("-minz", "--minzoom", help = "Minimum tile "
-                        "level desired")
-    p.add_argument("-maxz", "--maxzoom", help = "Maximum tile "
-                        "level desired")
-    p.add_argument("-ts", "--tileserver", help = "A server where the "
-                        "tiles can be downloaded: digital_globe_standard, "
-                        "digital_globe_premium, bing, etc")
-    p.add_argument("-f", "--format", help = "Output tile format: PNG, "
-                        "JPEG, or JPG")
-    p.add_argument("-cs", "--colorspace", help = "Color space of tile "
-                        " format: RGB or YCBCR.")
-    p.add_argument("-t", "--type", help = "Layer type: "
-                        "overlay or baselayer.")
-    p.add_argument("-d", "--description", help = "Describe it however "
-                        "you like!")
-    p.add_argument("-a", "--attribution", help = "Should state "
-                        "data origin.")
-    p.add_argument("-ver", "--version", help = "The version number of the"
-                        "tileset (the actual data, not the program)")
-    p.add_argument("-v", "--verbose", action = 'store_true',
-                        help = "Use if you want to see a lot of "
-                        "command line output flash by!")
-    p.add_argument("-c", "--clean", action = 'store_true',
-                        help = "Delete intermediate files.")
-    p.add_argument("-q", "--quality", help = "JPEG compression "
-                        "quality setting.")
+
+    for shortarg, longarg, helparg in arguments:
+        p.add_argument(shortarg, longarg, help = helparg)
+
+    for shortarg, longarg, actionarg, helparg in flags:
+        p.add_argument(shortarg, longarg, action = actionarg, help = helparg)
 
     opts = vars(p.parse_args())
 
-    main(opts)
+    polygon2mbtiles(opts)

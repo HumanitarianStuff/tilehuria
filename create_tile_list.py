@@ -111,7 +111,7 @@ def tile_coords_and_zoom_to_quadKey(x, y, zoom):
         quadKey += str(digit)
     return quadKey
 
-def main(opts):
+def create_tile_list(opts):
     """Read a polygon file and create a set of output files to create tiles"""
     infile = opts['infile']
     minzoom = opts['minzoom']
@@ -266,4 +266,4 @@ if __name__ == "__main__":
     opts['tileserver'] = ('digital_globe_standard'
                           if opts['tileserver'] == None
                           else opts['tileserver'])    
-    main(opts)
+    create_tile_list(opts)

@@ -108,7 +108,7 @@ def task(inlist, num_threads, outdirpath, timeout):
     for thread in threads:
         thread.join()
 
-def main(infile):
+def download_all_tiles_in_csv(infile):
     """Eat CSV of tile urls, spit out folder full of tiles"""
     (infilename, extension) = os.path.splitext(infile)
     outdirpath = '{}/'.format(infilename)
@@ -162,4 +162,4 @@ if __name__ == "__main__":
         #TODO: add argparse and opts to make thread number and timeout configurable
         sys.exit(1)
 
-    main(sys.argv[1])
+    download_all_tiles_in_csv(sys.argv[1])

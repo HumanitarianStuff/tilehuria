@@ -40,7 +40,7 @@ def increment_bounds(zoom, x, y, left, bottom, right, top):
     top = newtop if newtop > top else top
     return(left, bottom, right, top)
 
-def main(opts):
+def write_mbtiles(opts):
     """Take a folder of tiles in Slippy Map-style schema, return an MBtiles file."""
     indir = opts['tiledir']
     basename = indir
@@ -123,4 +123,4 @@ if __name__ == "__main__":
     
     opts = vars(p.parse_args())
         
-    main(opts)
+    write_mbtiles(opts)
