@@ -42,7 +42,7 @@ def get_ogr_driver(extension):
     elif extension == '.gpkg':
         driver = ogr.GetDriverByName('GPKG')
     else:
-        print('Check input file format for '+infile)
+        print('Check input file format for {}'.format(infile))
         print('Only polygon GeoJSON in EPSG 4326 is guaranteed to work.')
         sys.exit()
     return driver
@@ -125,11 +125,21 @@ def create_tile_list(opts):
         layer = datasource.GetLayer()
         extent = layer.GetExtent()
         (xmin, xmax, ymin, ymax) = (extent[0], extent[1], extent[2], extent[3])
+        featurecount = layer.GetFeatureCount()
+        if layer.GetGeomType() != 3:
+            print('That, my friend, is not a polygon layer.')
+            exit(1)
         geomcollection = ogr.Geometry(ogr.wkbGeometryCollection)
-        for feature in layer:
+
+        # using a horrible range iterator to work around an apparent bug in OGR
+        # (layer won't iterate in some versions of OGR)
+        for i in range(featurecount):
+            feature = layer.GetNextFeature()
             geomcollection.AddGeometry(feature.GetGeometryRef())
-    except:
+    except Exception as e:
         print('Something went wrong with the ogr driver')
+        print(e)
+        exit(1)
         
     # Create the main output file which will contain the URL list
     outfile = infilename + '_' + tileserver + '.csv'
