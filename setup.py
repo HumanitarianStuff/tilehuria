@@ -1,34 +1,23 @@
 from setuptools import setup, find_packages
 
 setup(
-    name='pyxform',
-    version='0.9.24',
-    author='github.com/xlsform',
-    author_email='info@xlsform.org',
+    name='tilehuria',
+    version='0.1.1',
+    author='Ivan Gayton, Ramani Huria, HOT-OSM, and collaborators',
+    author_email='ivangayton@gmail.com',
     packages=find_packages(),
     package_data={
-        'pyxform.odk_validate': [
-            'ODK_Validate.jar',
-        ],
-        'pyxform.tests': [
-            'example_xls/*.*',
-            'bug_example_xls/*.*',
-            'test_output/*.*',
-            'test_expected_output/*.*',
-        ]
     },
-    url='http://pypi.python.org/pypi/pyxform/',
-    description='A Python package to create XForms for ODK Collect.',
-    long_description=open('README.rst', 'rt').read(),
+    url='http://pypi.python.org/pypi/tilehuria/',
+    description='A Python package to create MBTiles from Slippy Map tileservers.',
+    long_description=open('README.md', 'rt').read(),
     install_requires=[
-        'xlrd==1.0.0',
-        'unicodecsv==0.14.1',
-        'formencode',
-        'unittest2',
+        GDAL
+        Pillow
     ],
     entry_points={
         'console_scripts': [
-            'xls2xform=pyxform.xls2xform:main_cli',
+            'polygon2mbtiles=tilehuria.polygon2mbtiles:polygon2mbtiles',
         ],
     },
 )
