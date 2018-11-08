@@ -35,7 +35,7 @@ sudo apt install -y python3-gdal
 sudo apt install -y python3-pip
 sudo pip3 install pillow
 git clone https://github.com/ivangayton/tilehuria
-cd tilehuria
+cd tilehuria/tilehuria/
 ```
 
 #### Testing it
