@@ -57,7 +57,8 @@ def managechunk(chunk, outdirpath, timeout):
         row = item[0].split(';')
         url = (row[4])
         (z, x, y) = (str(row[3]), str(row[1]), str(row[2]))
-        
+
+        #TODO use os.path.join instead of strings
         timeoutfile = ('{}/{}/{}/{}.{}'.format(outdirpath, z, x, y, 'timeout'))
         notilefile = ('{}/{}/{}/{}.{}'.format(outdirpath, z, x, y, 'notile'))
         rawdata = None
@@ -74,6 +75,7 @@ def managechunk(chunk, outdirpath, timeout):
             imtype = parse_url_for_imtype(url)
             if os.path.exists(timeoutfile):
                 os.remove(timeoutfile)
+            #TODO use os.path.join instead of strings
             outfilename = ('{}/{}/{}/{}.{}'.format(outdirpath, z, x, y, imtype))
             
             # if the file is less than 1040 bytes, there's no tile here.
@@ -145,6 +147,7 @@ def download_all_tiles_in_csv(infile):
            print('{} tiles failed to download a second time due to timeout'
                  .format(len(tile_timeouts)))
            print('See timeouts.csv for a list of failed downloads/missing tiles')
+           #TODO create the timeouts.csv file in the outdir
            with open('timeouts.csv', 'w') as to:
                to.write('wkt;Tilex;TileY;TileZ;URL')
                for line in tile_timeouts:

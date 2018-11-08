@@ -6,6 +6,7 @@ ensure that the arguments and defaults are consistent in all scripts.
 # Ivan Buendia Gayton, Humanitarian OpenStreetMap Team/Ramani Huria, 2018
 
 def argumentlist():
+    """Returns a list with a set of global arguments and defaults"""
     arguments = [ # shortarg, longarg, action, helpstring, defaultvalue
     ('minz', 'minzoom', None,
      'Minimum tile level desired.',

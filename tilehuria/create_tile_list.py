@@ -1,34 +1,20 @@
 #!/usr/bin/python3
-"""Create a CSV document containing a list of URLs of tiles from a Tile Map Service (TMS or tileserver).
-
-Arguments (using bash-style flags):
-
-infile: One or more polygons in GeoJSON format, in unprojected WGS84 (EPSG 4326)
-
--minz, --minzoom": Minimum tile level desired
--maxz, --maxzoom": Maximum tile level desired
--ts, --tileserver": A tile server where the needed tiles can be downloaded: digital_globe_standard digital_globe_premium, bing, etc
-
-examples:
-
-python3 create_tile_list.py /path/to/myPolygon.geojson
-
-or, if the default zoom levels are not what you want:
-
-python3 create_tile_list.py /path/to/myPolygon.geojson -minz 15 -maxz 21
-
+"""Create a CSV document containing a list of URLs of tiles from a Tile Map Service 
+(TMS or tileserver).
 """
 # Ivan Buendia Gayton, Humanitarian OpenStreetMap Team/Ramani Huria 2018
 
-import os
-import sys
+import sys, os
 import argparse
+
 from math import ceil
 import math
 from osgeo import ogr, osr
 import csv
 import re
 import random
+
+from arguments import argumentlist, set_defaults
 
 def get_ogr_driver(extension):
     """Load a driver from GDAL for the input file. Only GeoJSON guaranteed to work."""
@@ -114,11 +100,13 @@ def tile_coords_and_zoom_to_quadKey(x, y, zoom):
 def create_tile_list(opts):
     """Read a polygon file and create a set of output files to create tiles"""
     infile = opts['infile']
+    opts = set_defaults(opts)
+    
+    (infilename, extension) = os.path.splitext(infile)
     minzoom = opts['minzoom']
     maxzoom = opts['maxzoom']
     tileserver = opts['tileserver']
-    
-    (infilename, extension) = os.path.splitext(infile)
+
     try:
         driver = get_ogr_driver(extension)
         datasource = driver.Open(infile, 0)
@@ -245,25 +233,15 @@ def create_tile_list(opts):
     print()
 
 if __name__ == "__main__":
+
+    arguments = argumentlist()
     p = argparse.ArgumentParser()
-    p.add_argument("infile", help = "An input file as GeoJSON, shp, KML, "
-                        "or gpkg, containing exactly one polygon.")
-    p.add_argument("-minz", "--minzoom", help = "Minimum tile "
-                        "level desired")
-    p.add_argument("-maxz", "--maxzoom", help = "Maximum tile "
-                        "level desired")
-    p.add_argument("-ts", "--tileserver", help = "A server where the "
-                        "tiles can be downloaded: digital_globe_standard, "
-                        "digital_globe_premium, bing, etc")
-    p.add_argument("-v", "--verbose", action = 'store_true',
-                        help = "Use if you want to see a lot of "
-                        "command line output flash by!")
+    
+    p.add_argument('infile', help = "Input file as GeoJSON polygons")
+    
+    for (shortarg, longarg, actionarg, helpstring, defaultvalue) in arguments:
+        p.add_argument('-{}'.format(shortarg), '--{}'.format(longarg),
+                       action = actionarg,  help = helpstring)
 
     opts = vars(p.parse_args())
-
-    opts['minzoom'] = 16 if opts['minzoom'] == None else opts['minzoom']
-    opts['maxzoom'] = 20 if opts['maxzoom'] == None else opts['maxzoom']
-    opts['tileserver'] = ('digital_globe_standard'
-                          if opts['tileserver'] == None
-                          else opts['tileserver'])    
     create_tile_list(opts)
