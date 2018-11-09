@@ -44,6 +44,9 @@ def argumentlist():
     ('c', 'clean', 'store_true',
      'Delete intermediate files.',
      None)
+    ('od', 'output_dir', None,
+     'Output directory for read or downloaded tiles',
+     None)
     ]
     return arguments
 

@@ -19,6 +19,8 @@ import csv
 import time
 import urllib.request
 
+from arguments import argumentlist, set_defaults
+
 def check_dir(path):
     """If a directory does not exist, create it. Not thread-safe!"""
     if not os.path.exists(path):
@@ -58,15 +60,13 @@ def managechunk(chunk, outdirpath, timeout):
         url = (row[4])
         (z, x, y) = (str(row[3]), str(row[1]), str(row[2]))
 
-        #TODO use os.path.join instead of strings
-        timeoutfile = ('{}/{}/{}/{}.{}'.format(outdirpath, z, x, y, 'timeout'))
-        notilefile = ('{}/{}/{}/{}.{}'.format(outdirpath, z, x, y, 'notile'))
+        timeoutfile = os.path.join(outdirpath, z, x, '{}.timeout'.format(y))
+        notilefile = os.path.join(outdirpath, z, x, '{}.notile'.format(y))
         rawdata = None
         try:
             rawdata = urllib.request.urlopen(url, timeout=int(timeout)).read()
         except:
-            # Download failed. Create a file called {y}.timeout
-            
+            # Download failed. Create a timeout file as a placeholder
             with open(timeoutfile, 'w') as outfile:
                 writer = csv.writer(outfile, delimiter = ';')
                 writer.writerow([row[0], x, y, z, url])
@@ -75,8 +75,7 @@ def managechunk(chunk, outdirpath, timeout):
             imtype = parse_url_for_imtype(url)
             if os.path.exists(timeoutfile):
                 os.remove(timeoutfile)
-            #TODO use os.path.join instead of strings
-            outfilename = ('{}/{}/{}/{}.{}'.format(outdirpath, z, x, y, imtype))
+            outfilename = os.path.join(outdirpath, z, x, '{}.{}'.format(y,imtype))
             
             # if the file is less than 1040 bytes, there's no tile here.
             if(len(rawdata) > 1040):
@@ -100,7 +99,6 @@ def task(inlist, num_threads, outdirpath, timeout):
 
     threads = []
 
-    #TODO Send off an empty list to each chunk manager to get failed lines back
     for chunk in chunks:
         thread = threading.Thread(target=managechunk,
                                   args=(chunk, outdirpath, timeout))
@@ -110,10 +108,11 @@ def task(inlist, num_threads, outdirpath, timeout):
     for thread in threads:
         thread.join()
 
-def download_all_tiles_in_csv(infile):
+def download_all_tiles_in_csv(opts):
     """Eat CSV of tile urls, spit out folder full of tiles"""
+    infile = opts['csvinfile']
     (infilename, extension) = os.path.splitext(infile)
-    outdirpath = '{}/'.format(infilename)
+    outdirpath = os.path.join(infilename, '')
     check_dir(outdirpath)
     threads_to_use=50
     
@@ -135,7 +134,7 @@ def download_all_tiles_in_csv(infile):
         print('{} tiles failed to download due to timeout'
               .format(len(tile_timeouts)))
         
-        print('Trying timed-out tiles again, with half the number of threads'
+        print('Trying timed-out tiles again, with half the number of threads '
               'and a 100-second timeout')
         threads_to_use = 25
         if(len(tile_rows)) < 100:
@@ -144,25 +143,29 @@ def download_all_tiles_in_csv(infile):
     
         tile_timeouts = get_list_of_timeouts(outdirpath)
         if len(tile_timeouts):
-           print('{} tiles failed to download a second time due to timeout'
-                 .format(len(tile_timeouts)))
-           print('See timeouts.csv for a list of failed downloads/missing tiles')
-           #TODO create the timeouts.csv file in the outdir
-           with open('timeouts.csv', 'w') as to:
-               to.write('wkt;Tilex;TileY;TileZ;URL')
+            print('{} tiles failed to download a second time due to timeout'
+                  .format(len(tile_timeouts)))
+            timeoutcsv = '{}_timeouts.csv'.format(infilename)
+            with open(timeoutcsv, 'w') as to:
+               to.write('wkt;Tilex;TileY;TileZ;URL\n')
                for line in tile_timeouts:
                    to.write(line)
-           
+            print('See:\n{} \nfor list of failed/missing tiles'.format(timeoutcsv))
+        else:
+            print('Looks like all tiles were downloaded on the second and last try!')
     else:
         print('Looks like all tiles were downloaded on the first try!')
 
 if __name__ == "__main__":
 
-    if len( sys.argv ) != 2:
-        print("[ ERROR ] you must supply 1 argument: ")
-        print("1) a CSV file")
+    p = argparse.ArgumentParser()
+    
+    p.add_argument('csvinfile', help = "Input file as CSV of tiles with URLs")
+    
+    for (shortarg, longarg, actionarg, helpstring, defaultvalue) in arguments:
+        p.add_argument('-{}'.format(shortarg), '--{}'.format(longarg),
+                       action = actionarg,  help = helpstring)
 
-        #TODO: add argparse and opts to make thread number and timeout configurable
-        sys.exit(1)
+    opts = vars(p.parse_args())
 
-    download_all_tiles_in_csv(sys.argv[1])
+    download_all_tiles_in_csv(opts)

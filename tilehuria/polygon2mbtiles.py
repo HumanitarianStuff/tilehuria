@@ -22,11 +22,11 @@ def polygon2mbtiles(opts):
     foldername = '{}_{}'.format(basename, opts['tileserver'])
 
     print('\nCreating the CSV list of tiles in {}\n'.format(csvfile))
-    print(opts)
     create_tile_list(opts)
     
     print('Downloading the tiles into {}\n'.format(foldername))
-    download_all_tiles_in_csv(csvfile)
+    opts['csvinfile'] = csvfile
+    download_all_tiles_in_csv(opts)
     
     print('Converting all tiles to JPEG format to save space.')
     convert_and_compress_tiles(foldername)

@@ -6,6 +6,8 @@ import math
 import sqlite3
 from sqlite3 import Error
 
+from arguments import argumentlist, set_defaults
+
 def connect(infile):
     try:
         connection = sqlite3.connect(infile)
@@ -22,10 +24,8 @@ def check_dir(path):
 def main(opts):
     infile = opts['infile']
     (infilename, extension) = os.path.splitext(infile)
-
-    outdirpath = (os.path.join(opts['output_dir'], '')
-                  if opts['output_dir']
-                  else '{}_mbtiles/'.format(infilename))
+    opts = set_defaults(opts)
+    outdirpath = opts[output_dir]
     check_dir(outdirpath)
 
     infofilename = infile + '_info.txt'
