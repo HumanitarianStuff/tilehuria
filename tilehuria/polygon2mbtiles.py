@@ -6,11 +6,11 @@ Create a set of MBTiles from a Slippy Map tileserver.
 import sys, os
 import argparse
 
-from create_tile_list import create_tile_list
-from download_all_tiles_in_csv import download_all_tiles_in_csv
-from convert_and_compress_tiles import convert_and_compress_tiles
-from write_mbtiles import write_mbtiles
-from arguments import argumentlist, set_defaults
+from . create_tile_list import create_tile_list
+from . download_all_tiles_in_csv import download_all_tiles_in_csv
+from . convert_and_compress_tiles import convert_and_compress_tiles
+from . write_mbtiles import write_mbtiles
+from . arguments import argumentlist, set_defaults
 
 def polygon2mbtiles(opts):
     """Take an Area of Interest (AOI) polygon, return an MBtiles file."""

@@ -19,7 +19,7 @@ import csv
 import time
 import urllib.request
 
-from arguments import argumentlist, set_defaults
+from . arguments import argumentlist, set_defaults
 
 def check_dir(path):
     """If a directory does not exist, create it. Not thread-safe!"""

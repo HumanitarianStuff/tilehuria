@@ -14,7 +14,7 @@ import csv
 import re
 import random
 
-from arguments import argumentlist, set_defaults
+from . arguments import argumentlist, set_defaults
 
 def get_ogr_driver(extension):
     """Load a driver from GDAL for the input file. Only GeoJSON guaranteed to work."""

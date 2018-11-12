@@ -43,7 +43,7 @@ def argumentlist():
      None),
     ('c', 'clean', 'store_true',
      'Delete intermediate files.',
-     None)
+     None),
     ('od', 'output_dir', None,
      'Output directory for read or downloaded tiles',
      None)
