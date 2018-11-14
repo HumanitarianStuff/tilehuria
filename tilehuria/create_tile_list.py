@@ -14,7 +14,7 @@ import csv
 import re
 import random
 
-from . arguments import argumentlist, set_defaults
+from arguments import argumentlist, set_defaults
 
 def get_ogr_driver(extension):
     """Load a driver from GDAL for the input file. Only GeoJSON guaranteed to work."""
@@ -97,10 +97,13 @@ def tile_coords_and_zoom_to_quadKey(x, y, zoom):
         quadKey += str(digit)
     return quadKey
 
-def create_tile_list(opts):
+def create_tile_list(infile, **kwargs):
     """Read a polygon file and create a set of output files to create tiles"""
-    infile = opts['infile']
-    opts = set_defaults(opts)
+    print(args)
+    if not infile:
+        print('Please provide an input file')
+        exit(1)
+    opts = set_defaults(kwargs)
     
     (infilename, extension) = os.path.splitext(infile)
     minzoom = opts['minzoom']
@@ -254,4 +257,5 @@ if __name__ == "__main__":
                        action = actionarg,  help = helpstring)
 
     opts = vars(p.parse_args())
-    create_tile_list(opts)
+    infile = opts['infile']
+    create_tile_list(infile, **opts)

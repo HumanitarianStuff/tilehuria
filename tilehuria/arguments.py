@@ -56,5 +56,6 @@ def set_defaults(opts):
     """
     arguments = argumentlist()
     for shortarg, longarg, action, helpstring, defaultvalue in arguments:
-        opts[longarg] = defaultvalue if not opts.get(shortarg) else opts[longarg]
+        opts[longarg] = defaultvalue if not opts[longarg] else opts[longarg]
+        
     return opts

@@ -6,23 +6,24 @@ Create a set of MBTiles from a Slippy Map tileserver.
 import sys, os
 import argparse
 
-from . create_tile_list import create_tile_list
-from . download_all_tiles_in_csv import download_all_tiles_in_csv
-from . convert_and_compress_tiles import convert_and_compress_tiles
-from . write_mbtiles import write_mbtiles
-from . arguments import argumentlist, set_defaults
+from create_tile_list import create_tile_list
+from download_all_tiles_in_csv import download_all_tiles_in_csv
+from convert_and_compress_tiles import convert_and_compress_tiles
+from write_mbtiles import write_mbtiles
+from arguments import argumentlist, set_defaults
 
-def polygon2mbtiles(opts):
+def polygon2mbtiles(*args, **kwargs):
     """Take an Area of Interest (AOI) polygon, return an MBtiles file."""
-    infile = opts['infile']
-    opts = set_defaults(opts)
-    
+    if not infile:
+        print('Please provide an input file')
+        exit(1)
+    opts = set_defaults(kwargs)    
     (basename, extension) = os.path.splitext(infile)
     csvfile = '{}_{}.csv'.format(basename, opts['tileserver'])
     foldername = '{}_{}'.format(basename, opts['tileserver'])
 
     print('\nCreating the CSV list of tiles in {}\n'.format(csvfile))
-    create_tile_list(opts)
+    create_tile_list(infile, **opts)
     
     print('Downloading the tiles into {}\n'.format(foldername))
     opts['csvinfile'] = csvfile
@@ -47,4 +48,5 @@ if __name__ == "__main__":
                        action = actionarg,  help = helpstring)
 
     opts = vars(p.parse_args())
-    polygon2mbtiles(opts)
+    infile = opts['infile']
+    polygon2mbtiles(infile, **opts)
