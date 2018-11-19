@@ -1,5 +1,7 @@
 #!/usr/bin/python3
-"""Create a raster MBTile file from a Slippy Map-style folder 
+"""
+Create a raster MBTile file from a Slippy Map-style folder 
+
 https://wiki.openstreetmap.org/wiki/Slippy_map_tilenames) 
 in (attempted) compliance with the spec at 
 https://github.com/mapbox/mbtiles-spec/blob/master/1.3/spec.md
@@ -9,6 +11,8 @@ import sys, os
 import sqlite3
 import argparse
 import math
+
+from arguments import argumentlist, set_defaults
 
 def scandir(dir):
     """Walk recursively through a directory and return a list of all files in it"""
@@ -40,10 +44,13 @@ def increment_bounds(zoom, x, y, left, bottom, right, top):
     top = newtop if newtop > top else top
     return(left, bottom, right, top)
 
-def write_mbtiles(opts):
+def write_mbtiles(*args, **kwargs):
     """Take a folder of tiles in Slippy Map-style schema, return an MBtiles file."""
-    indir = opts['tiledir']
-    basename = indir
+    if len(args) != 1:
+        print('Please provide an input directory full of tiles')
+        exit(1)
+    indir = args[0]
+    opts = set_defaults(kwargs)
     outfile = indir + '.mbtiles'
     if os.path.exists(outfile):
         os.remove(outfile)
@@ -90,11 +97,11 @@ def write_mbtiles(opts):
             centerlat = float(top) - float(bottom)
     
     cursor.execute('CREATE TABLE metadata (name TEXT, value TEXT);')
-    tilesetmetadata = [('name', basename),
-                       ('type', 'overlay'),
-                       ('description', 'An MBTile set'),
-                       ('attribution', 'Somebody made it'),
-                       ('version', '1.0'),
+    tilesetmetadata = [('name', indir),
+                       ('type', opts['type']),
+                       ('description', opts['description']),
+                       ('attribution', opts['attribution']),
+                       ('version', opts['version']),
                        ('format', image_file_type),
                        ('bounds', '{},{},{},{}'.format(left, bottom, right, top)),
                        # Don't include center as it crashes the Mapbox Android driver
@@ -107,20 +114,31 @@ def write_mbtiles(opts):
     db.close()
     
 if __name__ == "__main__":
+#    p = argparse.ArgumentParser()
+#    p.add_argument("tiledir", help = "Input directory of tile files")
+#    p.add_argument("-f", "--format",
+#                   help = "Output tile file format: png, jpg, or jpeg")
+#    p.add_argument("-cs", "--colorspace",
+#                   help = "Color space of tile format: RGB or YCBCR.")
+#    p.add_argument("-t", "--type", help = "Layer type: overlay or baselayer.")
+#    p.add_argument("-d", "--description",
+#                   help = "Describe it however you like!")
+#    p.add_argument("-a", "--attribution", help = "Should state data origin.")
+#    p.add_argument("-v", "--version",
+#                   help = "The version number of the tileset "
+#                   "(the actual data, not the program)")
+#    
+#    opts = vars(p.parse_args())
+
+    arguments = argumentlist()
     p = argparse.ArgumentParser()
-    p.add_argument("tiledir", help = "Input directory of tile files")
-    p.add_argument("-f", "--format",
-                   help = "Output tile file format: png, jpg, or jpeg")
-    p.add_argument("-cs", "--colorspace",
-                   help = "Color space of tile format: RGB or YCBCR.")
-    p.add_argument("-t", "--type", help = "Layer type: overlay or baselayer.")
-    p.add_argument("-d", "--description",
-                   help = "Describe it however you like!")
-    p.add_argument("-a", "--attribution", help = "Should state data origin.")
-    p.add_argument("-v", "--version",
-                   help = "The version number of the tileset "
-                   "(the actual data, not the program)")
     
+    p.add_argument('tiledir', help = "Input directory of tile files")
+    
+    for (shortarg, longarg, actionarg, helpstring, defaultvalue) in arguments:
+        p.add_argument('-{}'.format(shortarg), '--{}'.format(longarg),
+                       action = actionarg,  help = helpstring)
+
     opts = vars(p.parse_args())
-        
-    write_mbtiles(opts)
+    tiledir = opts['tiledir']
+    write_mbtiles(tiledir, **opts)

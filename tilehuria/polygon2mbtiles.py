@@ -14,16 +14,17 @@ from arguments import argumentlist, set_defaults
 
 def polygon2mbtiles(*args, **kwargs):
     """Take an Area of Interest (AOI) polygon, return an MBtiles file."""
-    if not infile:
+    if len(args) != 1:
         print('Please provide an input file')
         exit(1)
+    infile = args[0]
     opts = set_defaults(kwargs)    
     (basename, extension) = os.path.splitext(infile)
     csvfile = '{}_{}.csv'.format(basename, opts['tileserver'])
     foldername = '{}_{}'.format(basename, opts['tileserver'])
 
     print('\nCreating the CSV list of tiles in {}\n'.format(csvfile))
-    create_tile_list(infile, **opts)
+    create_tile_list(infile, **opts)    
     
     print('Downloading the tiles into {}\n'.format(foldername))
     opts['csvinfile'] = csvfile
@@ -34,7 +35,7 @@ def polygon2mbtiles(*args, **kwargs):
     
     print('Writing the actual MBTiles file {}{}'.format(foldername, '.mbtiles'))
     opts['tiledir'] = foldername
-    write_mbtiles(opts)
+    write_mbtiles(foldername, **opts)
     
 if __name__ == "__main__":
 

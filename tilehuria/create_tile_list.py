@@ -1,9 +1,9 @@
 #!/usr/bin/python3
-"""Create a CSV document containing a list of URLs of tiles from a Tile Map Service 
+"""
+Create a CSV document containing a list of URLs of tiles from a Tile Map Service 
 (TMS or tileserver).
 """
 # Ivan Buendia Gayton, Humanitarian OpenStreetMap Team/Ramani Huria 2018
-
 import sys, os
 import argparse
 
@@ -97,12 +97,12 @@ def tile_coords_and_zoom_to_quadKey(x, y, zoom):
         quadKey += str(digit)
     return quadKey
 
-def create_tile_list(infile, **kwargs):
+def create_tile_list(*args, **kwargs):
     """Read a polygon file and create a set of output files to create tiles"""
-    print(args)
-    if not infile:
+    if len(args) != 1:
         print('Please provide an input file')
         exit(1)
+    infile = args[0]
     opts = set_defaults(kwargs)
     
     (infilename, extension) = os.path.splitext(infile)
