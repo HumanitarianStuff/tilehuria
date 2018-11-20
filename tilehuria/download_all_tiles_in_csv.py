@@ -18,6 +18,7 @@ import threading
 import csv
 import time
 import urllib.request
+import argparse
 
 from arguments import argumentlist, set_defaults
 
@@ -108,16 +109,15 @@ def task(inlist, num_threads, outdirpath, timeout):
     for thread in threads:
         thread.join()
 
-def download_all_tiles_in_csv(opts):
+def download_all_tiles_in_csv(csvinfile, optsin = {}):
     """Eat CSV of tile urls, spit out folder full of tiles"""
-    infile = opts['csvinfile']
-    (infilename, extension) = os.path.splitext(infile)
+    (infilename, extension) = os.path.splitext(csvinfile)
     outdirpath = os.path.join(infilename, '')
     check_dir(outdirpath)
     threads_to_use=50
     
     start = time.time()
-    with open(infile) as csvfile:
+    with open(csvinfile) as csvfile:
         reader = csv.reader(csvfile)
         tile_rows = list(reader)
         if(len(tile_rows)) < 100:
@@ -158,6 +158,7 @@ def download_all_tiles_in_csv(opts):
 
 if __name__ == "__main__":
 
+    arguments = argumentlist()
     p = argparse.ArgumentParser()
     
     p.add_argument('csvinfile', help = "Input file as CSV of tiles with URLs")
@@ -167,5 +168,6 @@ if __name__ == "__main__":
                        action = actionarg,  help = helpstring)
 
     opts = vars(p.parse_args())
+    csvinfile = opts['csvinfile']
 
-    download_all_tiles_in_csv(opts)
+    download_all_tiles_in_csv(csvinfile, opts)

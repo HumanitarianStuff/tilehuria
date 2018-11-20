@@ -12,30 +12,26 @@ from convert_and_compress_tiles import convert_and_compress_tiles
 from write_mbtiles import write_mbtiles
 from arguments import argumentlist, set_defaults
 
-def polygon2mbtiles(*args, **kwargs):
+def polygon2mbtiles(infile, optsin = {}):
     """Take an Area of Interest (AOI) polygon, return an MBtiles file."""
-    if len(args) != 1:
-        print('Please provide an input file')
-        exit(1)
-    infile = args[0]
-    opts = set_defaults(kwargs)    
+    opts = set_defaults(optsin)    
     (basename, extension) = os.path.splitext(infile)
     csvfile = '{}_{}.csv'.format(basename, opts['tileserver'])
     foldername = '{}_{}'.format(basename, opts['tileserver'])
 
     print('\nCreating the CSV list of tiles in {}\n'.format(csvfile))
-    create_tile_list(infile, **opts)    
+    create_tile_list(infile, opts)    
     
     print('Downloading the tiles into {}\n'.format(foldername))
     opts['csvinfile'] = csvfile
-    download_all_tiles_in_csv(opts)
+    download_all_tiles_in_csv(csvfile, opts)
     
     print('Converting all tiles to JPEG format to save space.')
     convert_and_compress_tiles(foldername)
     
     print('Writing the actual MBTiles file {}{}'.format(foldername, '.mbtiles'))
     opts['tiledir'] = foldername
-    write_mbtiles(foldername, **opts)
+    write_mbtiles(foldername, opts)
     
 if __name__ == "__main__":
 
@@ -50,4 +46,4 @@ if __name__ == "__main__":
 
     opts = vars(p.parse_args())
     infile = opts['infile']
-    polygon2mbtiles(infile, **opts)
+    polygon2mbtiles(infile, opts)

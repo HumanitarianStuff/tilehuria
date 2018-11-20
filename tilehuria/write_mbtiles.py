@@ -44,14 +44,10 @@ def increment_bounds(zoom, x, y, left, bottom, right, top):
     top = newtop if newtop > top else top
     return(left, bottom, right, top)
 
-def write_mbtiles(*args, **kwargs):
+def write_mbtiles(tiledir, optsin = {}):
     """Take a folder of tiles in Slippy Map-style schema, return an MBtiles file."""
-    if len(args) != 1:
-        print('Please provide an input directory full of tiles')
-        exit(1)
-    indir = args[0]
-    opts = set_defaults(kwargs)
-    outfile = indir + '.mbtiles'
+    opts = set_defaults(optsin)
+    outfile = tiledir + '.mbtiles'
     if os.path.exists(outfile):
         os.remove(outfile)
     sqlite_file = outfile
@@ -63,7 +59,7 @@ def write_mbtiles(*args, **kwargs):
                         tile_row INTEGER, tile_data BLOB);''')
     cursor.execute('''
     CREATE UNIQUE INDEX tile_index on tiles (zoom_level, tile_column, tile_row);''')    
-    image_files = scandir(indir)
+    image_files = scandir(tiledir)
     image_file_type = ''
     maxz = 0  # Max zoom will be incremented when we actually find tiles
     minz = 23  # As above but decrementing
@@ -97,7 +93,7 @@ def write_mbtiles(*args, **kwargs):
             centerlat = float(top) - float(bottom)
     
     cursor.execute('CREATE TABLE metadata (name TEXT, value TEXT);')
-    tilesetmetadata = [('name', indir),
+    tilesetmetadata = [('name', tiledir),
                        ('type', opts['type']),
                        ('description', opts['description']),
                        ('attribution', opts['attribution']),
@@ -114,21 +110,6 @@ def write_mbtiles(*args, **kwargs):
     db.close()
     
 if __name__ == "__main__":
-#    p = argparse.ArgumentParser()
-#    p.add_argument("tiledir", help = "Input directory of tile files")
-#    p.add_argument("-f", "--format",
-#                   help = "Output tile file format: png, jpg, or jpeg")
-#    p.add_argument("-cs", "--colorspace",
-#                   help = "Color space of tile format: RGB or YCBCR.")
-#    p.add_argument("-t", "--type", help = "Layer type: overlay or baselayer.")
-#    p.add_argument("-d", "--description",
-#                   help = "Describe it however you like!")
-#    p.add_argument("-a", "--attribution", help = "Should state data origin.")
-#    p.add_argument("-v", "--version",
-#                   help = "The version number of the tileset "
-#                   "(the actual data, not the program)")
-#    
-#    opts = vars(p.parse_args())
 
     arguments = argumentlist()
     p = argparse.ArgumentParser()
@@ -141,4 +122,4 @@ if __name__ == "__main__":
 
     opts = vars(p.parse_args())
     tiledir = opts['tiledir']
-    write_mbtiles(tiledir, **opts)
+    write_mbtiles(tiledir, optsin)

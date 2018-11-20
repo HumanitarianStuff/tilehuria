@@ -51,11 +51,12 @@ def argumentlist():
     return arguments
 
 def set_defaults(opts):
-    """Set sensible default options for MBTile creation. Does not overwrite 
+    """Set sensible default options for MBTile creation. Does not modify 
        any values passed in, only uses defaults if values are None or absent.
+       Takes a dict, Returns a list.
     """
     arguments = argumentlist()
     for shortarg, longarg, action, helpstring, defaultvalue in arguments:
-        opts[longarg] = defaultvalue if not opts[longarg] else opts[longarg]
+        opts[longarg] = defaultvalue if not opts.get(shortarg) else opts[longarg]
         
     return opts

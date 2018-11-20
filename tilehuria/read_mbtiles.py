@@ -21,14 +21,12 @@ def check_dir(path):
     if not os.path.exists(path):
         os.makedirs(os.path.join(path, ''))
 
-def main(opts):
-    infile = opts['infile']
+def read_mbtiles(infile, opts = {}):
     (infilename, extension) = os.path.splitext(infile)
-    opts = set_defaults(opts)
-    outdirpath = opts[output_dir]
+    outdirpath = infilename
     check_dir(outdirpath)
 
-    infofilename = infile + '_info.txt'
+    infofilename = infilename + '_mbtiles_info.txt'
     with open(infofilename, 'w') as infofile:
         connection = connect(infile)
         cursor = connection.cursor()
@@ -101,5 +99,6 @@ if __name__ == '__main__':
                         "command line output flash by!")
 
     opts = vars(p.parse_args())
+    infile = opts['infile']
     
-    main(opts)
+    read_mbtiles(infile, opts)
