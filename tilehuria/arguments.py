@@ -55,8 +55,13 @@ def set_defaults(opts):
        any values passed in, only uses defaults if values are None or absent.
        Takes a dict, Returns a list.
     """
+    # DEBUGGING OPTS
+    #print('\nOpts received by set_defaults: {}\n'.format(opts))
+    
     arguments = argumentlist()
     for shortarg, longarg, action, helpstring, defaultvalue in arguments:
-        opts[longarg] = defaultvalue if not opts.get(shortarg) else opts[longarg]
-        
+        opts[longarg] = defaultvalue if not opts.get(longarg) else opts[longarg]
+
+    # DEBUGGING OPTS
+    #print('\nOpts being returned by set_defaults: {}\n'.format(opts))
     return opts

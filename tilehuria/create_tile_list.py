@@ -100,6 +100,10 @@ def tile_coords_and_zoom_to_quadKey(x, y, zoom):
 def create_tile_list(infile, optsin = {}):
     """Read a polygon file and create a set of output files to create tiles"""
     opts = set_defaults(optsin)
+
+    # DEBUGGING OPTS
+    print(opts)
+
     (infilename, extension) = os.path.splitext(infile)
     minzoom = opts['minzoom']
     maxzoom = opts['maxzoom']
