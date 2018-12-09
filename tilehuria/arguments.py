@@ -56,12 +56,12 @@ def set_defaults(opts):
        Takes a dict, Returns a list.
     """
     # DEBUGGING OPTS
-    #print('\nOpts received by set_defaults: {}\n'.format(opts))
+    print('\nOpts received by set_defaults: {}\n'.format(opts))
     
     arguments = argumentlist()
     for shortarg, longarg, action, helpstring, defaultvalue in arguments:
         opts[longarg] = defaultvalue if not opts.get(longarg) else opts[longarg]
 
     # DEBUGGING OPTS
-    #print('\nOpts being returned by set_defaults: {}\n'.format(opts))
+    print('\nOpts being returned by set_defaults: {}\n'.format(opts))
     return opts
