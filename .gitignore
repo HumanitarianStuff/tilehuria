@@ -1,3 +1,6 @@
 URL_formats.txt
 __pycache__/
 *.pyc
+tilehuria/example_files/*
+!tilehuria/example_files
+tilehuria/example_files/San_Francisco_Shipyard.geojson

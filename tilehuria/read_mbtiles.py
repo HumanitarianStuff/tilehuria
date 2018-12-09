@@ -23,7 +23,8 @@ def check_dir(path):
 
 def read_mbtiles(infile, opts = {}):
     (infilename, extension) = os.path.splitext(infile)
-    outdirpath = infilename
+    outdirpath = (opts['output_dir'] if opts['output_dir']
+                  else '{}_mbtiles'.format(infilename))
     check_dir(outdirpath)
 
     infofilename = infilename + '_mbtiles_info.txt'
@@ -66,8 +67,6 @@ def read_mbtiles(infile, opts = {}):
             infofile.write(column[0])
             infofile.write('\n')
         infofile.write('\n')
-
-        #TODO Read tile format from metadata table instead of hardcoding
     
         infofile.write('Number of rows in tiles table: ')
         rows = cursor.fetchall()
@@ -79,10 +78,9 @@ def read_mbtiles(infile, opts = {}):
             (z, x, tiley) = (str(row[0]), str(row[1]), str(row[2]))
             y = int(math.pow(2.0, float(z)) - float(tiley) - 1.0)
             infofile.write('{}/{}/{}.{}\n'.format(z, x, y, image_format))
-            check_dir('{}{}/{}'.format(outdirpath, z, x))
-            outfilename = ('{}{}/{}/{}.{}'.
-                           format(outdirpath, z, x, y, image_format))
-            #print(outfilename)
+            path_to_dir = os.path.join(outdirpath, z, x)
+            check_dir(path_to_dir)
+            outfilename = os.path.join(path_to_dir, '{}.{}'.format(y, image_format))
             with open(outfilename, 'wb') as outfile:
                 outfile.write(row[3])
     
