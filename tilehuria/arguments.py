@@ -14,6 +14,9 @@ def argumentlist():
     ('maxz', 'maxzoom', None,
      'Maximum tile level desired.',
      20),
+    ('url', 'url_template', None,
+     'JOSM-style URL template for tileserver.',
+     None),
     ('ts', 'tileserver', None,
      'A server where the tiles can be downloaded:'
      ' digital_globe_standard, digital_globe_premium, bing, etc.',
@@ -57,6 +60,6 @@ def set_defaults(opts):
     """
     arguments = argumentlist()
     for shortarg, longarg, action, helpstring, defaultvalue in arguments:
-        opts[longarg] = defaultvalue if not opts.get(shortarg) else opts[longarg]
+        opts[longarg] = defaultvalue if not opts.get(longarg) else opts[longarg]
         
     return opts

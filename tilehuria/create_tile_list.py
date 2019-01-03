@@ -47,44 +47,34 @@ def pixel_coords_to_tile_address(x,y):
     y = int(math.floor(y / 256))
     return (x, y)
 
-def tile_coords_zoom_and_tileserver_to_URL(TileX, TileY, zoom, tileserver):
-    """Create a URL for a tile based on tile coordinates and zoom"""
-    URL = ''
-    if tileserver=='bing':
-        quadKey = tile_coords_and_zoom_to_quadKey(
-            int(TileX),int(TileY),int(zoom))
-        switchserver = random.choice([0,1,2,3])
-        URL = ("http://t{}.tiles.virtualearth.net/tiles/a{}.jpeg?"
-                "g=854&mkt=en-US&token="
-               "AopsdXjtTu-IwNoCTiZBtgRJ1g7yPkzAi65nXplc-eLJwZHYlAIf2yuSY_Kjg3Wn"
-               .format(switchserver, quadKey))
-    elif tileserver=='digital_globe_standard':
-        switchserver = random.choice(['a', 'b', 'c', 'd'])
-        URL = ("https://{}.tiles.mapbox.com/v4/digitalglobe.0a8e44ba"
-               "/{}/{}/{}.png?access_token="
-               "pk.eyJ1IjoiZGlnaXRhbGdsb2JlIiwiYSI6ImNqZGFrZ3pjczNpaH"
-               "YycXFyMGo0djY3N2IifQ.90uebT4-ow1uqZKTUrf6RQ"
-               .format(switchserver, zoom, TileX, TileY))
-    elif tileserver=='digital_globe_premium':
-        switchserver = random.choice(['a', 'b', 'c', 'd'])
-        URL = ("https://{}.tiles.mapbox.com/v4/digitalglobe.316c9a2e"
-               "/{}/{}/{}.png?access_token="
-               "pk.eyJ1IjoiZGlnaXRhbGdsb2JlIiwiYSI6ImNqZGFrZ2c2dzFlMW"
-               "gyd2x0ZHdmMDB6NzYifQ.9Pl3XOO82ArX94fHV289Pg"
-               .format(switchserver, zoom, TileX, TileY))
-    elif tileserver=='google':
-        switchserver = random.choice([0,1,2,3]) 
-        URL = ("https://mt{}.google.com/vt/lyrs=s&hl=en&x={}&y={}&z={}"
-               .format(switchserver, TileX, TileY, zoom))
-    elif tileserver=='osm':
-        pass
-    elif tileserver=='custom':
-        pass
-    else:
-        print('\nWhatever tileserver you think you are using is not working out')
-    return URL
+def tile_coords_to_url(tileX, tileY, zoom, url_template):
+    """Create a URL for a tile based on XYZ coordinates and a template URL"""
+    url = ''
+    # Random server switching based on choices embedded in the template URL
+    switchre = r"\{switch:(.*?)\}"
+    print('URL template is: {}'.format(url_template))
+    matches = re.finditer(switchre, url_template, re.MULTILINE | re.DOTALL)
+    switchedchoice = ''
+    for match in matches:
+        contents = match.group(1)
+        switchedchoice = random.choice(contents.split(',')).strip()
+    url = re.sub(switchre, switchedchoice, url_template)        
 
-def tile_coords_and_zoom_to_quadKey(x, y, zoom):
+    # Replace {x}, {y}, and {z} placeholders with the correct values
+    url = re.sub(r"\{x\}", str(tileX), url)
+    url = re.sub(r"\{y\}", str(tileY), url)
+    url = re.sub(r"\{z\}|\{zoom\}", str(zoom), url)
+
+    # replace {quadkey} with the actual item
+    url = re.sub(r"\{quadkey\}", tile_coords_to_quadkey(tileX, tileY, zoom), url)
+                 
+    # Strip prefixes from urls (JOSM-style urls contain tms information in prefix)
+    url = re.sub(r".*https\:\/\/", 'https://', url)
+    url = re.sub(r".*http\:\/\/", 'http://', url)
+    
+    return url
+
+def tile_coords_to_quadkey(x, y, zoom):
     """Create a quadkey from xyzoom coordinates for Bing-style tileservers."""
     quadKey = ''
     for i in range(zoom, 0, -1):
@@ -99,11 +89,15 @@ def tile_coords_and_zoom_to_quadKey(x, y, zoom):
 
 def create_tile_list(infile, optsin = {}):
     """Read a polygon file and create a set of output files to create tiles"""
+    print(optsin) #####testing optsin
     opts = set_defaults(optsin)
     (infilename, extension) = os.path.splitext(infile)
     minzoom = opts['minzoom']
     maxzoom = opts['maxzoom']
-    tileserver = opts['tileserver']
+    url_template = opts['url_template']
+    print('I got the URL template: {}'.format(url_template))
+    #tileserver = opts['tileserver']
+    tileserver = 'from_url'
 
     try:
         driver = get_ogr_driver(extension)
@@ -207,8 +201,8 @@ def create_tile_list(infile, optsin = {}):
                 if intersect == True:
                     # Tile is in AOI. Add a row to the csv
                     wkt_outline = '\"{}\"'.format(poly.ExportToWkt())
-                    URL = tile_coords_zoom_and_tileserver_to_URL(
-                        int(TileX), int(TileY), int(zoom), tileserver)    
+                    URL = tile_coords_to_url(int(TileX), int(TileY),
+                                             int(zoom), url_template)    
                     writer.writerow([wkt_outline,
                                      str(TileX), str(TileY), str(zoom), URL])
 
@@ -254,3 +248,4 @@ if __name__ == "__main__":
     opts = vars(p.parse_args())
     infile = opts['infile']
     create_tile_list(infile, opts)
+    
