@@ -87,10 +87,19 @@ def tile_coords_to_quadkey(x, y, zoom):
         quadKey += str(digit)
     return quadKey
 
+def url_template_from_file(tsname, file):
+    try:
+        urls = open('URL_formats.txt').read().split('\n')
+        urllist = [pair.split() for pair in urls]
+        
+
 def create_tile_list(infile, optsin = {}):
     """Read a polygon file and create a set of output files to create tiles"""
     print(optsin) #####testing optsin
+    print('\nThe opts received by create_tile_list are {}'.format(type(optsin)))
     opts = set_defaults(optsin)
+    print(opts)
+    print('\nThe opts returned by set_defaults are {}'.format(type(opts)))
     (infilename, extension) = os.path.splitext(infile)
     minzoom = opts['minzoom']
     maxzoom = opts['maxzoom']
