@@ -88,7 +88,7 @@ def tile_coords_to_quadkey(x, y, zoom):
     return quadKey
 
 def url_template_from_file(tsname, file):
-    """
+    """Fetch a url template from a file called URL_formats.txt"""
     d={}
     try:
         with open('URL_formats.txt') as urlfile:
@@ -264,4 +264,3 @@ if __name__ == "__main__":
     opts = vars(p.parse_args())
     infile = opts['infile']
     create_tile_list(infile, opts)
-    
