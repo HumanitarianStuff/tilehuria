@@ -88,10 +88,16 @@ def tile_coords_to_quadkey(x, y, zoom):
     return quadKey
 
 def url_template_from_file(tsname, file):
+    """
+    d={}
     try:
-        urls = open('URL_formats.txt').read().split('\n')
-        urllist = [pair.split() for pair in urls]
-        
+        with open('URL_formats.txt') as urlfile:
+            {k: v for line in urlfile for (k, v) in (line.strip().split(None, 1),)}
+    except Exception as e:
+        print('Did not manage to find or open the URL_formats.txt file')
+        print(e)
+
+    return d
 
 def create_tile_list(infile, optsin = {}):
     """Read a polygon file and create a set of output files to create tiles"""
@@ -148,8 +154,9 @@ def create_tile_list(infile, optsin = {}):
         outLayer = outDataSource.CreateLayer(outputGridfile,
                                              geom_type=ogr.wkbPolygon)
         featureDefn = outLayer.GetLayerDefn()
-    except:
+    except Exception as e:
         print('Did not manage to create {}'.format(outputGridfile))
+        print(e)
 
     for zoom in range(int(minzoom), int(maxzoom)+1):
         TileX_field = ogr.FieldDefn('TileX',ogr.OFTInteger)
