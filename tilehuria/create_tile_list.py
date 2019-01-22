@@ -87,25 +87,27 @@ def tile_coords_to_quadkey(x, y, zoom):
         quadKey += str(digit)
     return quadKey
 
-def url_template_from_file(tsname, file):
-    """Fetch a url template from a file called URL_formats.txt"""
-    d={}
+def url_template_from_file(tsname, urlfile = 'URL_formats.txt'):
+    """Fetch a url template from a specified file or default to URL_formats.txt"""
+    d = {}
     try:
-        with open('URL_formats.txt') as urlfile:
-            {k: v for line in urlfile for (k, v) in (line.strip().split(None, 1),)}
+        with open(urlfile) as urlfile:
+            d = {k: v for line in urlfile for (k, v)
+                 in (line.strip().split(None, 1),)}
     except Exception as e:
         print('Did not manage to find or open the URL_formats.txt file')
         print(e)
 
-    return d
+    return d[tsname]
 
 def create_tile_list(infile, optsin = {}):
     """Read a polygon file and create a set of output files to create tiles"""
-    print(optsin) #####testing optsin
-    print('\nThe opts received by create_tile_list are {}'.format(type(optsin)))
+    print('\nThe opts received by create_tile_list are:{}'.format(type(optsin)))
+    print('\nThe opts received by create_tile_list are:\n{}\n'.format(optsin)) 
     opts = set_defaults(optsin)
-    print(opts)
-    print('\nThe opts returned by set_defaults are {}'.format(type(opts)))
+    opts['url_template'] = url_template_from_file(opts['tileserver'])
+    print('\nThe opts returned by set_defaults are:{}'.format(type(opts)))
+    print('\nThe opts returned by set_defaults are:\n{}\n'.format(opts))
     (infilename, extension) = os.path.splitext(infile)
     minzoom = opts['minzoom']
     maxzoom = opts['maxzoom']
@@ -121,9 +123,6 @@ def create_tile_list(infile, optsin = {}):
         extent = layer.GetExtent()
         (xmin, xmax, ymin, ymax) = (extent[0], extent[1], extent[2], extent[3])
         featurecount = layer.GetFeatureCount()
-        if layer.GetGeomType() != 3:
-            print('That, my friend, is not a polygon layer.')
-            exit(1)
         geomcollection = ogr.Geometry(ogr.wkbGeometryCollection)
 
         # using a horrible range iterator to work around an apparent bug in OGR
@@ -263,4 +262,7 @@ if __name__ == "__main__":
 
     opts = vars(p.parse_args())
     infile = opts['infile']
+
+    # print(opts)
+    
     create_tile_list(infile, opts)
