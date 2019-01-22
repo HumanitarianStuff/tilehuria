@@ -122,4 +122,4 @@ if __name__ == "__main__":
 
     opts = vars(p.parse_args())
     tiledir = opts['tiledir']
-    write_mbtiles(tiledir, optsin)
+    write_mbtiles(tiledir, opts)
