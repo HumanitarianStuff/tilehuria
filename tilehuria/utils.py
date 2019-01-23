@@ -63,12 +63,16 @@ def tile_coords_to_quadkey(x, y, zoom):
     return quadKey
 
 def url_template_from_file(tsname, urlfile = 'URL_formats.txt'):
-    """Provide a url template from a specified file or default to URL_formats.txt"""
+    """Provide a url template from specified file or default URL_formats.txt"""
     d = {}
     try:
         with open(urlfile) as urlfile:
-            d = {k: v for line in urlfile for (k, v)
-                 in (line.strip().split(None, 1),)}
+            d = {}
+            for line in urlfile:
+                entry = line.strip().split(None, 1)
+                if len(entry) == 2:
+                    d[entry[0]] = entry[1]
+                
     except Exception as e:
         print('Did not manage to find or open {}'.format(urlfile))
         print(e)

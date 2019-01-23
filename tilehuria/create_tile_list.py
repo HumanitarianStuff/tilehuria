@@ -24,15 +24,14 @@ from arguments import argumentlist, set_defaults
 
 def create_tile_list(infile, optsin = {}):
     """Read a polygon file and create a set of output files to create tiles"""
-    print('\nThe opts received by create_tile_list are:{}'.format(type(optsin)))
-    print('\nThe opts received by create_tile_list are:\n{}\n'.format(optsin)) 
+    #print('\nThe opts received by create_tile_list are:{}'.format(type(optsin)))
+    #print('\nThe opts received by create_tile_list are:\n{}\n'.format(optsin)) 
     opts = set_defaults(optsin)
-    print('URL_template: {}'.format(opts['url_template']))
     url_template = (opts['url_template'] if opts['url_template']
                     else url_template_from_file(opts['tileserver']))
-    print(url_template)
-    print('\nThe opts returned by set_defaults are:{}'.format(type(opts)))
-    print('\nThe opts returned by set_defaults are:\n{}\n'.format(opts))
+    #print(url_template)
+    #print('\nThe opts returned by set_defaults are:{}'.format(type(opts)))
+    #print('\nThe opts returned by set_defaults are:\n{}\n'.format(opts))
     (infilename, extension) = os.path.splitext(infile)
     minzoom = opts['minzoom']
     maxzoom = opts['maxzoom']
