@@ -5,6 +5,7 @@ Various utilities for MBTile creation, mostly math.
 import sys, os
 
 from osgeo import ogr
+import math
 
 
 def get_ogr_driver(extension):
@@ -58,6 +59,28 @@ def get_geomcollection(infile, extension):
         print(e)
         exit(1)
 
+        
+def lat_long_upper_left(tileX, tileY, zoom):
+    """Provides a lat-long coordinate point for the upper left corner of a tile"""
+    pixelX = tileX * 256
+    pixelY = tileY * 256
+    mapSize = 256*math.pow(2,zoom)
+    x = (pixelX / mapSize) - 0.5
+    y = 0.5 - (pixelY / mapSize)
+    lonleft = 360 * x
+    lattop = (90-360 * math.atan(math.exp(-y * 2 * math.pi)) / math.pi)
+    return (lattop, lonleft)
+    
+def lat_long_lower_right(tileX, tileY, zoom):
+    """Provides a lat-long coordinate point for the lower right corner of a tile"""
+    pixelX = (tileX+1) * 256
+    pixelY = (tileY+1) * 256
+    MapSize = 256*math.pow(2,zoom)
+    x = (pixelX / MapSize) - 0.5
+    y = 0.5 - (pixelY / MapSize)
+    lonright = 360 * x
+    latbottom = (90 - 360 * math.atan(math.exp(-y * 2 * math.pi)) / math.pi)
+    return (latbottom, lonright)
         
 def intersect(tileX, tileY, zoom, geomcollection):
     """Checks if a given tile intersects with a polygon geometry collection"""

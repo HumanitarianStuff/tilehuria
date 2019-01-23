@@ -1,3 +1,5 @@
 URL_formats.txt
 __pycache__/
 *.pyc
+example_files/
+!example_files/San_Francisco_Shipyard.geojson

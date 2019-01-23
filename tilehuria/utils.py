@@ -23,28 +23,6 @@ def pixel_coords_to_tile_address(x,y):
     y = int(math.floor(y / 256))
     return (x, y)
 
-def lat_long_upper_left(tileX, tileY, zoom):
-    """Provides a lat-long coordinate point for the upper left corner of a tile"""
-    pixelX = tileX * 256
-    pixelY = tileY * 256
-    mapSize = 256*math.pow(2,zoom)
-    x = (pixelX / mapSize) - 0.5
-    y = 0.5 - (pixelY / mapSize)
-    lonleft = 360 * x
-    lattop = (90-360 * math.atan(math.exp(-y * 2 * math.pi)) / math.pi)
-    return (lattop, lonleft)
-    
-def lat_long_lower_right(tileX, tileY, zoom):
-    """Provides a lat-long coordinate point for the lower right corner of a tile"""
-    pixelX = (tileX+1) * 256
-    pixelY = (tileY+1) * 256
-    MapSize = 256*math.pow(2,zoom)
-    x = (pixelX / MapSize) - 0.5
-    y = 0.5 - (pixelY / MapSize)
-    lonright = 360 * x
-    latbottom = (90 - 360 * math.atan(math.exp(-y * 2 * math.pi)) / math.pi)
-    return (latbottom, lonright)
-
 def tile_coords_to_url(tileX, tileY, zoom, url_template):
     """Create a URL for a tile based on XYZ coordinates and a template URL"""
     url = ''
@@ -94,6 +72,7 @@ def url_template_from_file(tsname, urlfile = 'URL_formats.txt'):
     except Exception as e:
         print('Did not manage to find or open {}'.format(urlfile))
         print(e)
+        exit(1)
 
     if tsname in d:
         return d[tsname]

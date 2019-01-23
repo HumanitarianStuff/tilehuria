@@ -27,13 +27,15 @@ def create_tile_list(infile, optsin = {}):
     print('\nThe opts received by create_tile_list are:{}'.format(type(optsin)))
     print('\nThe opts received by create_tile_list are:\n{}\n'.format(optsin)) 
     opts = set_defaults(optsin)
-    opts['url_template'] = url_template_from_file(opts['tileserver'])
+    print('URL_template: {}'.format(opts['url_template']))
+    url_template = (opts['url_template'] if opts['url_template']
+                    else url_template_from_file(opts['tileserver']))
+    print(url_template)
     print('\nThe opts returned by set_defaults are:{}'.format(type(opts)))
     print('\nThe opts returned by set_defaults are:\n{}\n'.format(opts))
     (infilename, extension) = os.path.splitext(infile)
     minzoom = opts['minzoom']
     maxzoom = opts['maxzoom']
-    url_template = opts['url_template']
     tileserver = opts['tileserver'] if opts['tileserver'] else 'from_url'
 
     # Create the main output file which will contain the URL list
