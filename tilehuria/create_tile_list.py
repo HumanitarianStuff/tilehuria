@@ -63,8 +63,9 @@ def create_tile_list(infile, optsin = {}):
 
         for tileY in range(tileY_top, tileY_bottom + 1):
             for tileX in range(tileX_left, tileX_right + 1):
-                if intersect(tileX, tileY, zoom, geomcollection):
-                    wkt_outline = '\"{}\"'.format(intersect)
+                inter = intersect(tileX, tileY, zoom, geomcollection)
+                if inter:
+                    wkt_outline = '\"{}\"'.format(inter)
                     URL = tile_coords_to_url(int(tileX), int(tileY),
                                              int(zoom), url_template)    
                     writer.writerow([wkt_outline,
