@@ -9,8 +9,6 @@ import math
 import re
 import random
 
-from osgeo import ogr
-
 def lat_long_zoom_to_pixel_coords(lat, lon, zoom):
     """Create pixel coordinates from lat-long point at a given zoom level"""
     sinLat = math.sin(lat * math.pi/180.0)
@@ -46,23 +44,6 @@ def lat_long_lower_right(tileX, tileY, zoom):
     lonright = 360 * x
     latbottom = (90 - 360 * math.atan(math.exp(-y * 2 * math.pi)) / math.pi)
     return (latbottom, lonright)
-
-def intersect(tileX, tileY, zoom, geomcollection):
-    """Checks if a given tile intersects with a polygon geometry collection"""
-    (latt, lonl) = lat_long_upper_left(tileX, tileY, zoom)
-    (latb, lonr) = lat_long_lower_right(tileX, tileY, zoom)
-    
-    # Create a polygon (square) for the tile
-    ring = ogr.Geometry(ogr.wkbLinearRing)
-    points = [(lonl, latt), (lonr, latt), (lonr, latb), (lonl, latb), (lonl, latt)]
-    for point in points:
-        ring.AddPoint(point[0], point[1])
-    poly = ogr.Geometry(ogr.wkbPolygon)
-    poly.AddGeometry(ring)
-
-    # Check if the tile intersects the polygon of the Area of Interest
-    intersect = geomcollection.Intersect(poly)
-    return poly.ExportToWkt() if intersect else None
 
 def tile_coords_to_url(tileX, tileY, zoom, url_template):
     """Create a URL for a tile based on XYZ coordinates and a template URL"""

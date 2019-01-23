@@ -36,7 +36,6 @@ def get_extent(infile, extension):
         print('Something went wrong with the ogr driver')
         print(e)
         exit(1)
-
     
 def get_geomcollection(infile, extension):
     try:
@@ -58,3 +57,21 @@ def get_geomcollection(infile, extension):
         print('Something went wrong with the ogr driver')
         print(e)
         exit(1)
+
+        
+def intersect(tileX, tileY, zoom, geomcollection):
+    """Checks if a given tile intersects with a polygon geometry collection"""
+    (latt, lonl) = lat_long_upper_left(tileX, tileY, zoom)
+    (latb, lonr) = lat_long_lower_right(tileX, tileY, zoom)
+    
+    # Create a polygon (square) for the tile
+    ring = ogr.Geometry(ogr.wkbLinearRing)
+    points = [(lonl, latt), (lonr, latt), (lonr, latb), (lonl, latb), (lonl, latt)]
+    for point in points:
+        ring.AddPoint(point[0], point[1])
+    poly = ogr.Geometry(ogr.wkbPolygon)
+    poly.AddGeometry(ring)
+
+    # Check if the tile intersects the polygon of the Area of Interest
+    intersect = geomcollection.Intersect(poly)
+    return poly.ExportToWkt() if intersect else None

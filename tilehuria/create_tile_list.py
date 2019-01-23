@@ -14,13 +14,11 @@ from utils import pixel_coords_to_tile_address
 from utils import tile_coords_to_url
 from utils import tile_coords_to_quadkey
 from utils import url_template_from_file
-from utils import intersect
 
-from geo_utils import get_ogr_driver    # get rid of this and just get the outfile
+from geo_utils import intersect
+from geo_utils import get_ogr_driver
 from geo_utils import get_extent
 from geo_utils import get_geomcollection
-
-from osgeo import ogr
 
 from arguments import argumentlist, set_defaults
 
@@ -73,8 +71,8 @@ def create_tile_list(infile, optsin = {}):
 
     print('\nInput file: ' + infile)
     print('Zoom levels: {} to {}'.format(str(minzoom), str(maxzoom)))
-#    print('Output files:\n{}\n{}\n'
-#          .format(outfile, outputGridfile))
+    print('Output files:\n{}\n'
+          .format(outfile))
     print()
 
 if __name__ == "__main__":
