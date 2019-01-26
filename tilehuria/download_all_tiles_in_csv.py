@@ -20,7 +20,6 @@ import time
 import urllib.request
 import argparse
 
-sys.path.insert(0, os.path.dirname(__file__))
 from arguments import argumentlist, set_defaults
 
 def check_dir(path):
