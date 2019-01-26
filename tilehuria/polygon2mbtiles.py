@@ -14,13 +14,23 @@ from arguments import argumentlist, set_defaults
 
 def polygon2mbtiles(infile, optsin = {}):
     """Take an Area of Interest (AOI) polygon, return an MBtiles file."""
-    opts = set_defaults(optsin)    
+
+    # DEBUGGING OPTS
+    #print('\noptsin from command line: {}\n'.format(optsin))
+
+    opts = set_defaults(optsin)
+
+    # DEBUGGING OPTS
+    #print('\nopts after setting defaults: {}\n'.format(opts))
+
     (basename, extension) = os.path.splitext(infile)
     csvfile = '{}_{}.csv'.format(basename, opts['tileserver'])
     foldername = '{}_{}'.format(basename, opts['tileserver'])
 
     print('\nCreating the CSV list of tiles in {}\n'.format(csvfile))
-    create_tile_list(infile, opts)    
+    # DEBUGGING OPTS
+    print(opts)
+    create_tile_list(infile, opts)
     
     print('Downloading the tiles into {}\n'.format(foldername))
     opts['csvinfile'] = csvfile

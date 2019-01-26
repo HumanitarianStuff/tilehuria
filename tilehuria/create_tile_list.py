@@ -32,6 +32,7 @@ def create_tile_list(infile, optsin = {}):
     #print(url_template)
     #print('\nThe opts returned by set_defaults are:{}'.format(type(opts)))
     #print('\nThe opts returned by set_defaults are:\n{}\n'.format(opts))
+
     (infilename, extension) = os.path.splitext(infile)
     minzoom = opts['minzoom']
     maxzoom = opts['maxzoom']
