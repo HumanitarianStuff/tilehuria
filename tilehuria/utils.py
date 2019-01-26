@@ -62,8 +62,11 @@ def tile_coords_to_quadkey(x, y, zoom):
         quadKey += str(digit)
     return quadKey
 
-def url_template_from_file(tsname, urlfile = 'URL_formats.txt'):
-    """Provide a url template from specified file or default URL_formats.txt"""
+def url_template_from_file(tsname,
+                           urlfile = (os.path.join
+                           (os.path.dirname(__file__), 'URL_formats.txt'))):
+    """Provide a url template from specified file or default URL_formats.txt
+       in the same directory as this module"""
     d = {}
     try:
         with open(urlfile) as urlfile:
