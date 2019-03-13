@@ -73,11 +73,11 @@ def create_tile_list(infile, optsin = {}):
                 # Add the tile outline to the perimeters file
                 outFeature = ogr.Feature(featureDefn)
                 outFeature.SetGeometry(poly)
-                print('setting tile x')
+                #print('setting tile x')
                 outFeature.SetField('tileX', tileX)
-                print('setting tile y')
+                #print('setting tile y')
                 outFeature.SetField('tileY', tileY)
-                print('setting tile zoom')
+                #print('setting tile zoom')
                 outFeature.SetField('tileZ', zoom)
                 outLayer.CreateFeature(outFeature)
                 outFeature.Destroy
