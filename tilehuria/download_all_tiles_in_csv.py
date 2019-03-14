@@ -78,8 +78,10 @@ def managechunk(chunk, outdirpath, timeout):
                 os.remove(timeoutfile)
             outfilename = os.path.join(outdirpath, z, x, '{}.{}'.format(y,imtype))
             
-            # if the file is less than 1040 bytes, there's no tile here.
-            if(len(rawdata) > 1040):
+            # if the file is less than 2500 bytes, there's no tile here.
+            # Most tileservers have a blank tile less than 1kb, but the blank
+            # ESRI tile is 2.4kb, so raised this to 2600b to be sure
+            if(len(rawdata) > 2600):
                 with open(outfilename, 'wb') as outfile:
                     outfile.write(rawdata)
             else:
