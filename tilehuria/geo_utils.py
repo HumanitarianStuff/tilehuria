@@ -9,7 +9,9 @@ import math
 
 
 def get_ogr_driver(extension):
-    """Load a driver from GDAL for the input file. Only GeoJSON guaranteed to work."""
+    """Load a driver from GDAL for the input file. 
+       Only GeoJSON guaranteed to work.
+    """
     driver = None
     if extension == '.shp':
         driver = ogr.GetDriverByName('ESRI Shapefile')
@@ -58,10 +60,9 @@ def get_geomcollection(infile, extension):
         print('Something went wrong with the ogr driver')
         print(e)
         exit(1)
-
         
 def lat_long_upper_left(tileX, tileY, zoom):
-    """Provides a lat-long coordinate point for the upper left corner of a tile"""
+    """A lat-long coordinate point for the upper left corner of a tile"""
     pixelX = tileX * 256
     pixelY = tileY * 256
     mapSize = 256*math.pow(2,zoom)
@@ -72,7 +73,7 @@ def lat_long_upper_left(tileX, tileY, zoom):
     return (lattop, lonleft)
     
 def lat_long_lower_right(tileX, tileY, zoom):
-    """Provides a lat-long coordinate point for the lower right corner of a tile"""
+    """A lat-long coordinate point for the lower right corner of a tile"""
     pixelX = (tileX+1) * 256
     pixelY = (tileY+1) * 256
     MapSize = 256*math.pow(2,zoom)
@@ -83,7 +84,9 @@ def lat_long_lower_right(tileX, tileY, zoom):
     return (latbottom, lonright)
         
 def intersect(tileX, tileY, zoom, geomcollection):
-    """Checks if a given tile intersects with a polygon geometry collection"""
+    """Checks if a given tile intersects with a polygon geometry collection.
+       returns a WKT string consisting of a polygon of the tile perimeter.
+    """
     (latt, lonl) = lat_long_upper_left(tileX, tileY, zoom)
     (latb, lonr) = lat_long_lower_right(tileX, tileY, zoom)
     
@@ -98,3 +101,24 @@ def intersect(tileX, tileY, zoom, geomcollection):
     # Check if the tile intersects the polygon of the Area of Interest
     intersect = geomcollection.Intersect(poly)
     return poly.ExportToWkt() if intersect else None
+
+def create_poly_if_intersect(tileX, tileY, zoom, geomcollection):
+    """Checks if a given tile intersects with a polygon geometry collection.
+       Returns an OGR polygon object of tile perimeter."""
+    (latt, lonl) = lat_long_upper_left(tileX, tileY, zoom)
+    (latb, lonr) = lat_long_lower_right(tileX, tileY, zoom)
+    
+    # Create a polygon (square) for the tile
+    ring = ogr.Geometry(ogr.wkbLinearRing)
+    points = [(lonl, latt), (lonr, latt),
+              (lonr, latb), (lonl, latb),
+              (lonl, latt)]
+    for point in points:
+        ring.AddPoint(point[0], point[1])
+    poly = ogr.Geometry(ogr.wkbPolygon)
+    poly.AddGeometry(ring)
+
+    # Check if the tile intersects the polygon of the Area of Interest
+    intersect = geomcollection.Intersect(poly)
+    return poly if intersect else None
+    
