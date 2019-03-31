@@ -86,3 +86,13 @@ def url_template_from_file(tsname,
     else:
         print('No URL template for {} found in {}'.format(tsname, urlfile))
         return None
+
+def get_url_name_list(urlfile = (os.path.join
+                                 (os.path.dirname(__file__),
+                                  'URL_formats.txt'))):
+    servernames = []
+    with open(urlfile) as urlfile:
+        for line in urlfile:
+            entry = line.strip().split(None, 1)
+            if len(entry) == 2:
+                servernames.append(entry[0])
