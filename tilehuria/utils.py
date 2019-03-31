@@ -96,3 +96,4 @@ def get_url_name_list(urlfile = (os.path.join
             entry = line.strip().split(None, 1)
             if len(entry) == 2:
                 servernames.append(entry[0])
+    return servernames
