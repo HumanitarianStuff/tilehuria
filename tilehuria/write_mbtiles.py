@@ -11,6 +11,7 @@ import sys, os
 import sqlite3
 import argparse
 import math
+import re
 
 sys.path.insert(0, os.path.dirname(__file__))
 from arguments import argumentlist, set_defaults
@@ -25,7 +26,8 @@ def scandir(dir):
 
 def path_to_zxy(path):
     """Return zoom, x, y coordinates from the path of a tile in a slippy map folder"""
-    splitpath = path.split('/')
+    # split on os-specific path sseparator
+    splitpath = path.split(os.sep)
     l = len(splitpath)
     (z,x,y) = (splitpath[l-3], splitpath[l-2], splitpath[l-1].split('.')[0])
     return (z,x,y)

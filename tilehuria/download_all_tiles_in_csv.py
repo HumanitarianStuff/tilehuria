@@ -90,12 +90,14 @@ def managechunk(chunk, outdirpath, timeout):
                     writer.writerow([row[0], x, y, z, url])            
 
 def task(inlist, num_threads, outdirpath, timeout):
-    header_row = inlist.pop(0)
+    # Filter out empty rows to manage Windows line ending character encoding
+    list_of_rows = [row for row in inlist if row]
+    header_row = list_of_rows.pop(0)
     # Break the list into chunks of approximately equal size
-    chunks = [inlist[i::num_threads] for i in range(num_threads)]
+    chunks = [list_of_rows[i::num_threads] for i in range(num_threads)]
 
     # Create Slippy Map-type folder structure (before tasking for thread safety)
-    for line in inlist:
+    for line in list_of_rows:
         row = line[0].split(';')
         (z, x) = (str(row[3]), str(row[1]), )
         check_dir('{}{}/{}'.format(outdirpath, z, x))
