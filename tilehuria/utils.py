@@ -38,6 +38,8 @@ def tile_coords_to_url(tileX, tileY, zoom, url_template):
     # Replace {x}, {y}, and {z} placeholders with the correct values
     url = re.sub(r"\{x\}", str(tileX), url)
     url = re.sub(r"\{y\}", str(tileY), url)
+    totalrowsatthiszoomlevel = int(math.pow(2, zoom)) 
+    url = re.sub(r"\{-y\}", str((totalrowsatthiszoomlevel - 1) - tileY), url)
     url = re.sub(r"\{z\}|\{zoom\}", str(zoom), url)
 
     # replace {quadkey} with the actual item

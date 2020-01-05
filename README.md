@@ -34,9 +34,22 @@ sudo apt update
 sudo apt install -y python3-gdal
 sudo apt install -y python3-pip
 sudo pip3 install pillow
-git clone https://github.com/ivangayton/tilehuria
+git clone https://github.com/humanitarianstuff/tilehuria
 cd tilehuria/tilehuria/
 ```
+
+#### Setting it up on Windows
+1. If you have a version of Windows later than XP, download ["Windows X86-64 Executable Installer"](https://www.python.org/downloads/windows/) from the left column under "Stable Releases"
+2. Run installer, **check box Add python 3.x to PATH** and click "install now"
+Then in your command prompt...
+```
+pip install gdal
+pip install pillow
+git clone https://github.com/humanitarianstuff/tilehuria
+cd tilehuria/tilehuria/ (the path to the scripts folder)
+```
+Note: if you see the error ```error: no module named osgeo```, there is an issue with the GDAL library. Make sure that you have [MS Visual Studio](https://visualstudio.microsoft.com/downloads/) installed. Also, [this link may provide further help](https://pythongisandstuff.wordpress.com/2016/04/13/installing-gdal-ogr-for-python-on-windows/).
+
 
 #### Testing it
 ```

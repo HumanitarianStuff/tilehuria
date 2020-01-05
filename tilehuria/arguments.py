@@ -22,8 +22,8 @@ def argumentlist():
      None),
     ('ts', 'tileserver', None,
      'A server where the tiles can be downloaded:'
-     ' digital_globe_standard, digital_globe_premium, bing, etc.',
-     'digital_globe_standard'),
+     ' osm, maxar_standard, maxar_premium, bing, etc.',
+     'osm'),
     ('f', 'format', None,
      'Output tile format: PNG, JPEG, or JPG',
      'JPG'),

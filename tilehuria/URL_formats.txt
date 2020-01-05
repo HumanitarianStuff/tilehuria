@@ -1,0 +1,1 @@
+osm https://{switch:a,b,c}.tile.openstreetmap.org/{z}/{x}/{y}.png
