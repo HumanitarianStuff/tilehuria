@@ -8,4 +8,3 @@ dependencies:
   - flask
   - gdal=2.2.2
   - pillow
-  - sqlite
