@@ -11,13 +11,13 @@ This might not be for everyone: there are tools like [tilemill](http://tilemill-
 # Appropriate Use (Do's and Don'ts)
 Users should **_always_** respect the terms of use of the imagery providers such as Bing (Microsoft) and Digital Globe, who have gone out of their way to allow contributors to OpenStreetMap to use their imagery to build [the free map of the world](https://www.openstreetmap.org).
 
-The intended use of this toolset is to allow people in low-connectivity environments to make use of the imagery for effective mapping. It was developed in Dar es Salaam by the Humanitarian OpenStreetMap Team/Ramani Huria in order to allow Tanzanian students to work effectively in large numbers with marginal Internet connections (digitizers and field mappers are no longer stuck waiting for Internet, and can map to their full potential). 
+The intended use of this toolset is to allow people in low-connectivity environments to make use of the imagery for effective mapping. It was developed in Dar es Salaam by the Humanitarian OpenStreetMap Team/Ramani Huria in order to allow Tanzanian students to work effectively in large numbers with marginal Internet connections (digitizers and field mappers are no longer stuck waiting for Internet, and can map to their full potential).
 
 The terms of service of both DG and Bing permit "caching for performance," in other words allowing users to retain tiles locally in order to work more efficiently. These terms do **not** permit use of offline tiles in products, for example in the background of a finished map, or redistribution of any kind.
 
 You may legally and ethically use the tilesets generated with these tools to:
 1. Digitize using [JOSM](https://josm.openstreetmap.de/), even when you have a poor Internet connection, and
-2. Place a background tileset on your mobile device when mapping, even if you are out of mobile service areas. 
+2. Place a background tileset on your mobile device when mapping, even if you are out of mobile service areas.
 
 Please do not risk our community's access to imagery to build the open map of the world! Respect the terms and conditions of the donors of the imagery we use! Do not use these tools for uses other than contributing to OpenStreetMap!
 
@@ -39,16 +39,20 @@ cd tilehuria/tilehuria/
 ```
 
 #### Setting it up on Windows
-1. If you have a version of Windows later than XP, download ["Windows X86-64 Executable Installer"](https://www.python.org/downloads/windows/) from the left column under "Stable Releases"
+1. Install Python3 for Windows. If you have a version of Windows later than XP, download  ["Windows X86-64 Executable Installer"](https://www.python.org/downloads/windows/) from the left column under "Stable Releases"
 2. Run installer, **check box Add python 3.x to PATH** and click "install now"
-Then in your command prompt...
+3. If you're using a virtual environment such as miniconda or anaconda, follow [these instructions](https://docs.conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html#creating-an-environment-from-an-environment-yml-file) using tilehuria.yaml located in /tilehuria
+4. Otherwise, In your command prompt...
 ```
 pip install gdal
 pip install pillow
 git clone https://github.com/humanitarianstuff/tilehuria
 cd tilehuria/tilehuria/ (the path to the scripts folder)
 ```
-Note: if you see the error ```error: no module named osgeo```, there is an issue with the GDAL library. Make sure that you have [MS Visual Studio](https://visualstudio.microsoft.com/downloads/) installed. Also, [this link may provide further help](https://pythongisandstuff.wordpress.com/2016/04/13/installing-gdal-ogr-for-python-on-windows/).
+##### Troubleshooting on Windows
+- If you see the error ```error: no module named osgeo```, there is an issue with the GDAL library.
+ - Make sure that you have [MS Visual Studio](https://visualstudio.microsoft.com/downloads/) installed
+ - [Further troubleshooting ideas](https://pythongisandstuff.wordpress.com/2016/04/13/installing-gdal-ogr-for-python-on-windows/).
 
 
 #### Testing it
@@ -90,7 +94,7 @@ Open [QGIS](https://www.qgis.org/en/site/). I hope you know what area you wish t
 
 Zoom into an area you want an MBTile for. You will need to create a single polygon. In QGIS, go to ```Layer -> Create Layer -> New Temporary Scratch Layer```. Choose ```Polygon / CurvePolygon``` as the geometry type, and give it a name like "MyArea".
 
-Click on the Add Polygon button and trace a polygon. Make sure it has valid geometry (no lines crossing over themselves, no duplicate nodes, etc). Don't make one that's too big! Using zoom level 16-20, you'll encounter something like 1000 tiles per square kilometer. That'll translate to about 25MB of tiles in PNG format, or about 10MB in JPEG format (which is why, if you are using a tileserver that serves PNG files, it's a good idea to use the conversion and compression script here to go from PNG to JPEG before actually creating your MBTile file). We would not recommend using this for anything more than 100 square km (10 km on a side). Anything larger than that, break it up into multiple areas and create multiple MBTile files. 
+Click on the Add Polygon button and trace a polygon. Make sure it has valid geometry (no lines crossing over themselves, no duplicate nodes, etc). Don't make one that's too big! Using zoom level 16-20, you'll encounter something like 1000 tiles per square kilometer. That'll translate to about 25MB of tiles in PNG format, or about 10MB in JPEG format (which is why, if you are using a tileserver that serves PNG files, it's a good idea to use the conversion and compression script here to go from PNG to JPEG before actually creating your MBTile file). We would not recommend using this for anything more than 100 square km (10 km on a side). Anything larger than that, break it up into multiple areas and create multiple MBTile files.
 
 Once you are happy with the polygon, save your edits, leave editing mode in QGIS, and right-click on the layer to export it.
 
@@ -115,7 +119,7 @@ The polygon2mbtiles.py program doesn't actually do anything by itself, it calls 
 - convert_and_compress_tiles.py (stores all of the tile image files in jpeg format to save space; important for people working in areas with poor internet)
 - write_mbtiles.py (grabs all of the tiles in a given folder and saves them into a single MBTiles file.
 
-We built the tools this way so that someone who has another workflow or toolset can use any part of the Tilehuria toolset. If you have a better way of downloading tiles, great! 
+We built the tools this way so that someone who has another workflow or toolset can use any part of the Tilehuria toolset. If you have a better way of downloading tiles, great!
 
 Here's how to use the individual scripts:
 
@@ -142,9 +146,9 @@ The second script downloads all of the tiles! It's *argument* is the csv file cr
 
 ```python3 download_all_tiles_in_csv.py /path/to/myArea_digital_globe_standard.csv```
 
-You will now see a folder appear with the same name as the CSV file (minus the .csv extension). If you look inside that folder, you will see a bunch of subfolders (one for each tile zoom level), and inside those a bunch more folders (one for each tile row) and inside those a bunch of pictures (one for each tile in that row)! 
+You will now see a folder appear with the same name as the CSV file (minus the .csv extension). If you look inside that folder, you will see a bunch of subfolders (one for each tile zoom level), and inside those a bunch more folders (one for each tile row) and inside those a bunch of pictures (one for each tile in that row)!
 
-The reason for this folder structure is that it corresponds to the [Slippy Map folder and filename structure](https://wiki.openstreetmap.org/wiki/Slippy_map_tilenames), therefore can be served directly by a webserver. You can of course simply turn this folder into an MBTile set, but if you like, you can use it as the base folder for a tileserver to share with multiple people on the same Local Area Network (hint: great for mapathons with poor Internet connections). 
+The reason for this folder structure is that it corresponds to the [Slippy Map folder and filename structure](https://wiki.openstreetmap.org/wiki/Slippy_map_tilenames), therefore can be served directly by a webserver. You can of course simply turn this folder into an MBTile set, but if you like, you can use it as the base folder for a tileserver to share with multiple people on the same Local Area Network (hint: great for mapathons with poor Internet connections).
 
 #### Save space (and download bandwidth if you are doing this on a server rather than a local machine)
 This optional step saves all of the tile image files in a folder in JPEG format. This is three or four times smaller than the PNG format used by some tile providers.
@@ -169,9 +173,9 @@ Drop the MBTile file into QGIS, load it onto your phone to use it with [ODK Coll
 - -minz or --minzoom": Minimum tile level desired. Integer, defaults to 16
 - -maxz or --maxzoom": Maximum tile level desired. Integer, defaults to 20
 - -ts or --tileserver": A tile server where the needed tiles can be downloaded. Examples: ```digital_globe_standard```, ```digital_globe_premium```, ```bing``` (later versions will allow user to configure arbitrary tile servers). Defaults to digital_globe_standard (if you don't specify a tileserver, it will use DG Standard, which is fine).
-- -f or --format: Actual tiles can be changed from one file format to another, for example PNG to JPEG (useful for reducing file size). ```PNG``` or ```JPEG```. 
+- -f or --format: Actual tiles can be changed from one file format to another, for example PNG to JPEG (useful for reducing file size). ```PNG``` or ```JPEG```.
 - -cs or --colorspace: JPEG files (but not PNG files) can be encoded either using RGB or YCbCr; the latter can be used for more aggressive compression with relatively little perceptible quality loss with most aerial imagery. ```RGB``` or ```YCBCR```.
-- -q or --quality: JPEG compression quality setting, just as in any image processing software. Number from 1 to 100, defaults to 75. 
+- -q or --quality: JPEG compression quality setting, just as in any image processing software. Number from 1 to 100, defaults to 75.
 - -t or --type: some programs that display MBTiles want to know whether the data is intended as a baselayer or an overlay (to help decide what to put on top of what). ```baselayer``` or ```overlay```.
 - -c or --clean: Delete intermediate files (the tools generate several files the end user does not need, as well as a folder full of tiles, which will take up as much space as the MBTile set! If you set this flag, all of those will be removed when the script is finished.
 - -ver or --verbose: you will see lots of cryptic information going by as the script works. Useful if something has gone wrong and you're trying to figure out the problem.
@@ -188,7 +192,7 @@ Drop the MBTile file into QGIS, load it onto your phone to use it with [ODK Coll
   - Check all providers for the highest tile level available
   - Check all providers for the most recent tile (don't know if this is possible; I think there is some timestamp data in the metadata for each URL?)
   - Use pillow to check for cloudy areas (probably just highest overall RGB pixel value, maybe something more complicated like Hamming distance from an all-white tile, maybe even looking for sections of all white)?
- 
+
 - Create error message for fuckup with polygon in GDAL part of things
 - Investigate possibilities for multi-polygons, polygons with holes in them, etc
 - Finish implementing all of the flag options (verbose, clean etc)
@@ -196,7 +200,7 @@ Drop the MBTile file into QGIS, load it onto your phone to use it with [ODK Coll
 - Investigate YCbCr and JPEG setting options more thoroughly (get compression down harder)
 - Write a couple of tests (start by convertng the file in the example folder and checking that this doesn't throw errors)
 - Set up Continuous Integration (with TravisCI)
-- Publish TileHuria to PyPi so that it can be installed via pip. 
+- Publish TileHuria to PyPi so that it can be installed via pip.
   - This should handle the dependency installs (pillow and python-gdal), no?
 - Now that it's going to be published and perhaps fairly easy to access, be more careful with the legal/licensing issues:
   - Maybe hold the commercial tileserver URLs in a local file (with .gitignore to avoid it being published)? Perhaps do what QuickMapServices does and use a "contributed pack" for testing purposes?

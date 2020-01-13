@@ -1,0 +1,10 @@
+name: tilehuria
+channels:
+ - conda-forge
+
+dependencies:
+  - python=3.7
+  - pip
+  - flask
+  - gdal=2.2.2
+  - pillow
