@@ -64,6 +64,25 @@ def tile_coords_to_quadkey(x, y, zoom):
         quadKey += str(digit)
     return quadKey
 
+def quadkey_to_tile_coords(quadkey):
+    """Create a tuple of x, y, zoom tile coordinates from a quadkey"""
+    x, y = (0, 0)
+    qk = str(quadkey).strip()
+    zoom = len(qk)
+    for i in range(zoom):
+        mask = 1 << (zoom - i - 1)
+        digit = qk[i]
+        if digit == '1':
+            x |= mask
+        if digit == '2':
+            y |= mask
+        if digit == '3':
+            x |= mask
+            y |= mask
+    return (x, y, zoom)
+        
+        
+
 def url_template_from_file(tsname,
                            urlfile = (os.path.join
                            (os.path.dirname(__file__), 'URL_formats.txt'))):
