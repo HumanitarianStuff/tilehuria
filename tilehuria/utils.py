@@ -80,8 +80,7 @@ def quadkey_to_tile_coords(quadkey):
             x |= mask
             y |= mask
     return (x, y, zoom)
-        
-        
+    # TODO Add error checking for invalid quadkeys
 
 def url_template_from_file(tsname,
                            urlfile = (os.path.join
