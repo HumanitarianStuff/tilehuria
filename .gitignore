@@ -2,3 +2,4 @@ __pycache__/
 *.pyc
 example_files/
 !example_files/San_Francisco_Shipyard.geojson
+tilehuria/URL_formats.txt
