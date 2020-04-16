@@ -80,13 +80,26 @@ def read_mbtiles(infile, opts = {}):
             infofile.write('{}/{}/{}.{}\n'.format(z, x, y, image_format))
             path_to_dir = os.path.join(outdirpath, z, x)
             check_dir(path_to_dir)
-            outfilename = os.path.join(path_to_dir, '{}.{}'.format(y, image_format))
-            with open(outfilename, 'wb') as outfile:
+            ofname = os.path.join(path_to_dir, '{}.{}'.format(y, image_format))
+            oftowrite = get_unique_fn(ofname)
+            with open(oftowrite, 'wb') as outfile:
                 outfile.write(row[3])
     
         cursor.close()
         connection.close()
-                
+
+def get_unique_fn(ofname):
+    while(os.path.isfile(ofname)):
+        endchar = ofname[-1]
+        if endchar.isdigit():
+            endnum = int(endchar) + 1
+            ofname = ofname[:-1] + str(endnum)
+        # It was a duplicate but the first one (no number yet appended)
+        else:
+            ofname = ofname + '1'
+    return ofname
+               
+
 if __name__ == '__main__':
     p = argparse.ArgumentParser()
     p.add_argument("infile", help = "An MBTile file to be read.")
