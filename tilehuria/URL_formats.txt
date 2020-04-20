@@ -1,12 +1,3 @@
-bing http://t{switch:0,1,2,3}.tiles.virtualearth.net/tiles/a{quadkey}.jpeg?g=854&mkt=en-US&token=AopsdXjtTu-IwNoCTiZBtgRJ1g7yPkzAi65nXplc-eLJwZHYlAIf2yuSY_Kjg3Wn
-google https://mt{switch:0,1,2,3}.google.com/vt/lyrs=s&hl=en&x={x}&y={y}&z={zoom}
-esri_world_imagery https://{switch:services,server}.arcgisonline.com/arcgis/rest/services/World_Imagery/MapServer/tile/{zoom}/{y}/{x}
-esri_world_imagery_clarity_beta https://clarity.maptiles.arcgis.com/arcgis/rest/services/World_Imagery/MapServer/tile/{zoom}/{y}/{x}
-stamen_watercolor http://c.tile.stamen.com/watercolor/{z}/{x}/{y}.jpg
 osm https://{switch:a,b,c}.tile.openstreetmap.org/{z}/{x}/{y}.png
 osm_no_labels https://{switch:,a.,b.,c.}tiles.wmflabs.org/osm-no-labels/{z}/{x}/{y}.png
-maxar https://earthwatch.digitalglobe.com/earthservice/tmsaccess/tms/1.0.0/DigitalGlobe:ImageryTileService@EPSG:3857@jpg/{zoom}/{x}/{-y}.jpg?connectId=d9c5e3ef-6300-4cec-9562-c1f27da6b2d9
-maxar_standard https://earthwatch.digitalglobe.com/earthservice/tmsaccess/tms/1.0.0/DigitalGlobe:ImageryTileService@EPSG:3857@jpg/{zoom}/{x}/{-y}.jpg?connectId=d9c5e3ef-6300-4cec-9562-c1f27da6b2d9
-maxar_premium https://earthwatch.digitalglobe.com/earthservice/tmsaccess/tms/1.0.0/DigitalGlobe:ImageryTileService@EPSG:3857@jpg/{zoom}/{x}/{-y}.jpg?connectId=91e57457-aa2d-41ad-a42b-3b63a123f54a
-mapbox_satellite https://{switch:a,b,c,d}.tiles.mapbox.com/v4/mapbox.satellite/{zoom}/{x}/{y}.jpg?access_token=pk.eyJ1Ijoib3BlbnN0cmVldG1hcCIsImEiOiJjaml5MjVyb3MwMWV0M3hxYmUzdGdwbzE4In0.q548FjhsSJzvXsGlPsFxAQ
-magico_kilimanjaro http://imagico.de/map/osmim_tiles.php?layer=S2A_R092_S05_20160802T075556&z={zoom}&x={x}&y={-y}
+

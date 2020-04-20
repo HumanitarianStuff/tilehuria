@@ -37,6 +37,7 @@ def create_tile_list(infile, optsin = {}):
     minzoom = opts['minzoom']
     maxzoom = opts['maxzoom']
     tileserver = opts['tileserver'] if opts['tileserver'] else 'from_url'
+    yreverse = opts['y-reverse']
 
     # Create the main output file which will contain the URL list
     outfile = '{}_{}.csv'.format(infilename, tileserver)
