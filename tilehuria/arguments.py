@@ -50,6 +50,9 @@ def argumentlist():
     ('c', 'clean', 'store_true',
      'Delete intermediate files.',
      None),
+    ('yr', 'y-reverse', 'store_false',
+     'Y tile coordinate counts from bottom up, rather than default top down.',
+     None),
     ('od', 'output_dir', None,
      'Output directory for read or downloaded tiles',
      None)
